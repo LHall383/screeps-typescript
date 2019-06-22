@@ -15,17 +15,17 @@ import {healTargetType, TaskHeal} from '../TaskInstances/task_heal';
 import {meleeAttackTargetType, TaskMeleeAttack} from '../TaskInstances/task_meleeAttack';
 import {pickupTargetType, TaskPickup} from '../TaskInstances/task_pickup';
 import {rangedAttackTargetType, TaskRangedAttack} from '../TaskInstances/task_rangedAttack';
-import {TaskWithdraw, withdrawTargetType} from '../TaskInstances/task_withdraw';
+import {withdrawTargetType, TaskWithdraw} from '../TaskInstances/task_withdraw';
 import {repairTargetType, TaskRepair} from '../TaskInstances/task_repair';
 import {reserveTargetType, TaskReserve} from '../TaskInstances/task_reserve';
 import {signControllerTargetType, TaskSignController} from '../TaskInstances/task_signController';
-import {TaskTransfer, transferTargetType} from '../TaskInstances/task_transfer';
-import {TaskUpgrade, upgradeTargetType} from '../TaskInstances/task_upgrade';
+import {transferTargetType, TaskTransfer} from '../TaskInstances/task_transfer';
+import {upgradeTargetType, TaskUpgrade} from '../TaskInstances/task_upgrade';
 import {dropTargetType, TaskDrop} from '../TaskInstances/task_drop';
 import {deref, derefRoomPosition} from './helpers';
 import {TaskInvalid} from '../TaskInstances/task_invalid';
-import {TaskTransferAll} from '../TaskInstances/task_transferAll';
-import {TaskWithdrawAll, withdrawAllTargetType} from '../TaskInstances/task_withdrawAll';
+import {transferAllTargetType, TaskTransferAll} from '../TaskInstances/task_transferAll';
+import {withdrawAllTargetType, TaskWithdrawAll} from '../TaskInstances/task_withdrawAll';
 
 
 export function initializeTask(protoTask: protoTask): Task {
@@ -115,4 +115,3 @@ export function initializeTask(protoTask: protoTask): Task {
 	// Return it
 	return task;
 }
-

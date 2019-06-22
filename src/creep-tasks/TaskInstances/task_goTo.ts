@@ -16,6 +16,7 @@ export class TaskGoTo extends Task {
 		} else {
 			super(TaskGoTo.taskName, {ref: '', pos: target}, options);
 		}
+		
 		// Settings
 		this.settings.targetRange = 1;
 	}

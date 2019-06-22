@@ -9,6 +9,7 @@ interface Game {
 interface TaskSettings {
 	targetRange: number;
 	workOffRoad: boolean;
+	oneShot: boolean;
 }
 
 interface TaskOptions {
@@ -38,6 +39,7 @@ interface protoTask {
 	_parent: protoTask | null;
 	options: TaskOptions;
 	data: TaskData;
+	tick: number;
 }
 
 interface ITask extends protoTask {
@@ -94,6 +96,8 @@ interface RoomObject {
 
 interface RoomPosition {
 	isEdge: boolean;
+	neighbors: RoomPosition[];
+	isVisible: boolean;
 
 	isPassible(ignoreCreeps?: boolean): boolean;
 

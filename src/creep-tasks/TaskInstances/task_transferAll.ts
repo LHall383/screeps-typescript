@@ -1,6 +1,5 @@
 import {Task} from '../Task';
 
-
 export type transferAllTargetType = StructureStorage | StructureTerminal | StructureContainer;
 
 export class TaskTransferAll extends Task {
@@ -14,7 +13,8 @@ export class TaskTransferAll extends Task {
 
 	constructor(target: transferAllTargetType, skipEnergy = false, options = {} as TaskOptions) {
 		super(TaskTransferAll.taskName, target, options);
-		this.data.skipEnergy = skipEnergy;
+		this.target = target;
+		this.data = { skipEnergy: skipEnergy };
 	}
 
 	isValidTask() {

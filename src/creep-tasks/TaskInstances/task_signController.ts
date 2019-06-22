@@ -13,7 +13,8 @@ export class TaskSignController extends Task {
 	constructor(target: signControllerTargetType, signature = 'Your signature here',
 				options                                     = {} as TaskOptions) {
 		super(TaskSignController.taskName, target, options);
-		this.data.signature = signature;
+		this.target = target;
+		this.data = { signature: signature };
 	}
 
 	isValidTask() {

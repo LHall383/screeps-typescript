@@ -9,6 +9,8 @@ export class TaskMeleeAttack extends Task {
 
 	constructor(target: meleeAttackTargetType, options = {} as TaskOptions) {
 		super(TaskMeleeAttack.taskName, target, options);
+		this.target = target;
+
 		// Settings
 		this.settings.targetRange = 1;
 	}
@@ -25,4 +27,3 @@ export class TaskMeleeAttack extends Task {
 		return this.creep.attack(this.target);
 	}
 }
-

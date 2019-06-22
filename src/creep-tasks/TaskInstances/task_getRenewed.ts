@@ -8,6 +8,7 @@ export class TaskGetRenewed extends Task {
 
 	constructor(target: getRenewedTargetType, options = {} as TaskOptions) {
 		super(TaskGetRenewed.taskName, target, options);
+		this.target = target;
 	}
 
 	isValidTask() {

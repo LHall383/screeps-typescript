@@ -11,7 +11,8 @@ export class TaskBuild extends Task {
 
 	constructor(target: buildTargetType, options = {} as TaskOptions) {
 		super(TaskBuild.taskName, target, options);
-		// Settings
+		this.target = target;
+
 		this.settings.targetRange = 3;
 		this.settings.workOffRoad = true;
 	}

@@ -10,6 +10,7 @@ export class TaskWithdrawAll extends Task {
 
 	constructor(target: withdrawAllTargetType, options = {} as TaskOptions) {
 		super(TaskWithdrawAll.taskName, target, options);
+		this.target = target;
 	}
 
 	isValidTask() {

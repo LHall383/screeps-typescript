@@ -9,6 +9,7 @@ export class TaskInvalid extends Task {
 
 	constructor(target: any, options = {} as TaskOptions) {
 		super('INVALID', target, options);
+		this.target = target;
 	}
 
 	isValidTask() {

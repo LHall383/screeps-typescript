@@ -9,6 +9,8 @@ export class TaskRangedAttack extends Task {
 
 	constructor(target: rangedAttackTargetType, options = {} as TaskOptions) {
 		super(TaskRangedAttack.taskName, target, options);
+		this.target = target;
+
 		// Settings
 		this.settings.targetRange = 3;
 	}
@@ -25,4 +27,3 @@ export class TaskRangedAttack extends Task {
 		return this.creep.rangedAttack(this.target);
 	}
 }
-

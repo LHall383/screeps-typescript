@@ -40,7 +40,7 @@ Object.defineProperty(Creep.prototype, 'task', {
 	},
 });
 
-Creep.prototype.run = function (): void {
+Creep.prototype.run = function (): number | void {
 	if (this.task) {
 		return this.task.run();
 	}
@@ -77,7 +77,6 @@ Object.defineProperty(RoomObject.prototype, 'targetedBy', {
 
 // RoomPosition prototypes =============================================================================================
 
-
 Object.defineProperty(RoomPosition.prototype, 'isEdge', { // if the position is at the edge of a room
 	get: function () {
 		return this.x == 0 || this.x == 49 || this.y == 0 || this.y == 49;
@@ -102,6 +101,12 @@ Object.defineProperty(RoomPosition.prototype, 'neighbors', {
 	}
 });
 
+Object.defineProperty(RoomPosition.prototype, 'isVisible', {
+	get: function () {
+		return false;
+	}
+});
+
 RoomPosition.prototype.isPassible = function (ignoreCreeps = false): boolean {
 	// Is terrain passable?
 	if (Game.map.getTerrainAt(this) == 'wall') return false;
@@ -110,7 +115,7 @@ RoomPosition.prototype.isPassible = function (ignoreCreeps = false): boolean {
 		if (ignoreCreeps == false && this.lookFor(LOOK_CREEPS).length > 0) return false;
 		// Are there structures?
 		let impassibleStructures = _.filter(this.lookFor(LOOK_STRUCTURES), function (s: Structure) {
-			return this.structureType != STRUCTURE_ROAD &&
+			return s.structureType != STRUCTURE_ROAD &&
 				   s.structureType != STRUCTURE_CONTAINER &&
 				   !(s.structureType == STRUCTURE_RAMPART && ((<StructureRampart>s).my ||
 															  (<StructureRampart>s).isPublic));

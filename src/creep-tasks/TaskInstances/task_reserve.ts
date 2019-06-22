@@ -9,6 +9,7 @@ export class TaskReserve extends Task {
 
 	constructor(target: reserveTargetType, options = {} as TaskOptions) {
 		super(TaskReserve.taskName, target, options);
+		this.target = target;
 	}
 
 	isValidTask() {

@@ -13,6 +13,7 @@ export class TaskHarvest extends Task {
 
 	constructor(target: harvestTargetType, options = {} as TaskOptions) {
 		super(TaskHarvest.taskName, target, options);
+		this.target = target;
 	}
 
 	isValidTask() {
@@ -36,4 +37,3 @@ export class TaskHarvest extends Task {
 		return this.creep.harvest(this.target);
 	}
 }
-

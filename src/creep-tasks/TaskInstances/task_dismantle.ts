@@ -10,6 +10,7 @@ export class TaskDismantle extends Task {
 
 	constructor(target: dismantleTargetType, options = {} as TaskOptions) {
 		super(TaskDismantle.taskName, target, options);
+		this.target = target;
 	}
 
 	isValidTask() {

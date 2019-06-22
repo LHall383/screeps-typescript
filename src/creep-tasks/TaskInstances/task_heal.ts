@@ -9,6 +9,8 @@ export class TaskHeal extends Task {
 
 	constructor(target: healTargetType, options = {} as TaskOptions) {
 		super(TaskHeal.taskName, target, options);
+		this.target = target;
+
 		// Settings
 		this.settings.targetRange = 3;
 	}

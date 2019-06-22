@@ -9,6 +9,8 @@ export class TaskUpgrade extends Task {
 
 	constructor(target: upgradeTargetType, options = {} as TaskOptions) {
 		super(TaskUpgrade.taskName, target, options);
+		this.target = target;
+
 		// Settings
 		this.settings.targetRange = 3;
 		this.settings.workOffRoad = true;
@@ -26,4 +28,3 @@ export class TaskUpgrade extends Task {
 		return this.creep.upgradeController(this.target);
 	}
 }
-

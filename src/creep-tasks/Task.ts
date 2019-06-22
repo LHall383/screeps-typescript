@@ -79,7 +79,7 @@ export abstract class Task implements ITask {
 	}
 
 	get proto(): protoTask {
-		return {
+		return <protoTask>{
 			name   : this.name,
 			_creep : this._creep,
 			_target: this._target,
@@ -222,6 +222,7 @@ export abstract class Task implements ITask {
 			return this.creep.moveTo(nextPos);
 			// return this.creep.travelTo(nextPos); // <- switch if you use Traveler
 		}
+    return undefined;
 	}
 
 	// Return expected number of ticks until creep arrives at its first destination; this requires Traveler to work!
@@ -229,6 +230,7 @@ export abstract class Task implements ITask {
 		if (this.creep && (<any>this.creep.memory)._trav) {
 			return (<any>this.creep.memory)._trav.path.length;
 		}
+    return undefined;
 	}
 
 	// Execute this task each tick. Returns nothing unless work is done.

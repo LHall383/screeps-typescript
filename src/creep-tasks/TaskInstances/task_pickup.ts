@@ -9,6 +9,9 @@ export class TaskPickup extends Task {
 
 	constructor(target: pickupTargetType, options = {} as TaskOptions) {
 		super(TaskPickup.taskName, target, options);
+		this.target = target;
+
+		//Settings
 		this.settings.oneShot = true;
 	}
 

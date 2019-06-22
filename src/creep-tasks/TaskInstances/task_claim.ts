@@ -10,7 +10,7 @@ export class TaskClaim extends Task {
 
 	constructor(target: claimTargetType, options = {} as TaskOptions) {
 		super(TaskClaim.taskName, target, options);
-		// Settings
+		this.target = target;
 	}
 
 	isValidTask() {

@@ -12,7 +12,8 @@ export class TaskAttack extends Task {
 
 	constructor(target: attackTargetType, options = {} as TaskOptions) {
 		super(TaskAttack.taskName, target, options);
-		// Settings
+		this.target = target;
+
 		this.settings.targetRange = 3;
 	}
 

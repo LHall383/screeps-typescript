@@ -25,10 +25,14 @@ export class TaskWithdraw extends Task {
 				amount: number | undefined     = undefined,
 				options                        = {} as TaskOptions) {
 		super(TaskWithdraw.taskName, target, options);
+		this.target = target;
+
 		// Settings
 		this.settings.oneShot = true;
-		this.data.resourceType = resourceType;
-		this.data.amount = amount;
+		this.data = {
+			resourceType: resourceType,
+			amount: amount
+		}
 	}
 
 	isValidTask() {
@@ -60,4 +64,3 @@ export class TaskWithdraw extends Task {
 	}
 
 }
-

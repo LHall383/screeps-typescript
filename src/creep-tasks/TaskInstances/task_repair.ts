@@ -9,6 +9,8 @@ export class TaskRepair extends Task {
 
 	constructor(target: repairTargetType, options = {} as TaskOptions) {
 		super(TaskRepair.taskName, target, options);
+		this.target = target;
+
 		// Settings
 		this.settings.targetRange = 3;
 	}
