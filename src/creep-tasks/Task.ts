@@ -114,6 +114,16 @@ export abstract class Task implements ITask {
 		return deref(this._target.ref);
 	}
 
+    set target(target: RoomObject | null) {
+        if( target === null ){
+            this._target.ref = "";
+            this._target._pos = {x:-1, y:-1, roomName:""};
+        } else {
+            this._target.ref = target.id;
+            this._target._pos = target.pos;
+        }
+    }
+
 	// Dereferences the saved target position; useful for situations where you might lose vision
 	get targetPos(): RoomPosition {
 		// refresh if you have visibility of the target

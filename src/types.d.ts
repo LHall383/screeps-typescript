@@ -18,3 +18,7 @@ declare namespace NodeJS {
     log: any;
   }
 }
+
+interface RoomObject {
+    id: string;
+}
