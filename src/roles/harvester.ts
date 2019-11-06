@@ -1,6 +1,7 @@
 import { Tasks } from '../creep-tasks/Tasks';
 
 export class RoleHarvester {
+    static roleName: string = 'harvester';
 
     static newTask(creep: Creep): void {
         if (creep.carry.energy < creep.carryCapacity) {
