@@ -6,6 +6,7 @@ export type transferTargetType =
 	| StructureNuker
 	| StructurePowerSpawn
 	| StructureSpawn
+	| StructureExtension
 	| Creep;
 
 export class TaskTransfer extends Task {

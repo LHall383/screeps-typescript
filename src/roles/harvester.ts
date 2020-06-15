@@ -5,16 +5,26 @@ export class RoleHarvester {
 
     static newTask(creep: Creep): void {
         if (creep.carry.energy < creep.carryCapacity) {
+            //find the source with the least miners currently on it
             let sources = creep.room.find(FIND_SOURCES);
-            let unattendedSource = _.filter(sources, source => source.targetedBy.length == 0)[0];
-            if (unattendedSource) {
-                creep.task = Tasks.harvest(unattendedSource);
-            } else {
-                creep.task = Tasks.harvest(sources[0]);
-            }
+            let leastBusySource = _.sortBy(sources, source => source.targetedBy.length)[0];
+            creep.task = Tasks.harvest(leastBusySource);
         } else {
-            let spawn = Game.spawns['Spawn1'];
-            creep.task = Tasks.transfer(spawn);
+            //Look for spawns that aren't full first
+            let spawn = creep.pos.findClosestByPath(FIND_MY_SPAWNS, { filter: spawn => spawn.store[RESOURCE_ENERGY] < spawn.store.getCapacity(RESOURCE_ENERGY) });
+            if (spawn) {
+                creep.task = Tasks.transfer(spawn);
+                return;
+            }
+
+            //Look for extensions that aren't full next
+            let extension = creep.pos.findClosestByPath(FIND_STRUCTURES, { filter: s => s.structureType == STRUCTURE_EXTENSION && s.store[RESOURCE_ENERGY] < s.store.getCapacity(RESOURCE_ENERGY) });
+            if (extension && extension.structureType == STRUCTURE_EXTENSION) {
+                creep.task = Tasks.transfer(extension);
+                return;
+            }
+
+            //TODO: fill towers, storage, etc.
         }
     }
 }
