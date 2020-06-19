@@ -21,6 +21,10 @@ interface Memory {
   log: any;
 }
 
+interface StoreBase<POSSIBLE_RESOURCES extends ResourceConstant, UNLIMITED_STORE extends boolean> {
+  getFreeCapacity(resource: ResourceConstant): number;
+}
+
 // `global` extension samples
 declare namespace NodeJS {
   interface Global {
