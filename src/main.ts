@@ -2,6 +2,7 @@ import { ErrorMapper } from "utils/ErrorMapper";
 import 'creep-tasks/prototypes';
 import { Tasks } from 'creep-tasks/Tasks';
 import { RoleHarvester } from 'roles/harvester';
+import { AutoSpawn } from "autospawn/auto_spawn";
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -15,10 +16,20 @@ export const loop = ErrorMapper.wrapLoop(() => {
         }
     }
 
+    // Look through all rooms with a spawn and queue spawns, then perform spawns
+    for (const roomName in Game.rooms) {
+        const room = Game.rooms[roomName];
+
+        let spawns = room.find(FIND_MY_SPAWNS);
+        if (spawns.length > 0) {
+            AutoSpawn.queueSpawns(room);
+            AutoSpawn.spawnFromQueue(room);
+        }
+    }
+
+    // Search through all the creeps in the game, and perform actions
     for (const name in Game.creeps) {
         const creep = Game.creeps[name];
-
-
 
         if (creep.isIdle && creep.memory.role == RoleHarvester.roleName) {
             console.log(creep.name + ' finding new task');

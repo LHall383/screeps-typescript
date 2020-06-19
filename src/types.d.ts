@@ -13,7 +13,7 @@ interface RoomMemory {
     tick: number
   };
 
-  spawnQueue: [{ memory: CreepMemory, body: BodyPartConstant[] }];
+  spawnQueue: { memory: CreepMemory, body: BodyPartConstant[] }[];
 }
 
 interface Memory {
