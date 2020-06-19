@@ -3,8 +3,17 @@
 // memory extension samples
 interface CreepMemory {
   role: string;
-  room: string;
   working: boolean;
+  spawnRoom: string;
+}
+
+interface RoomMemory {
+  creepRoleCounts: {
+    data: { [role: string]: number },
+    tick: number
+  };
+
+  spawnQueue: [{ memory: CreepMemory, body: BodyPartConstant[] }];
 }
 
 interface Memory {
@@ -20,5 +29,5 @@ declare namespace NodeJS {
 }
 
 interface RoomObject {
-    id: string;
+  id: string;
 }
