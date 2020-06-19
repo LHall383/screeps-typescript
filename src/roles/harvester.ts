@@ -24,7 +24,25 @@ export class RoleHarvester {
                 return;
             }
 
-            //TODO: fill towers, storage, etc.
+            //Look for tower that isn't full
+            let tower = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: s => s.structureType == STRUCTURE_TOWER && s.store[RESOURCE_ENERGY] < s.store.getCapacity(RESOURCE_ENERGY) });
+            if (tower && tower.structureType == STRUCTURE_TOWER) {
+                creep.task = Tasks.transfer(tower);
+                return;
+            }
+
+            //Build instead
+            let sites = creep.room.find(FIND_MY_CONSTRUCTION_SITES);
+            if (sites.length) {
+                creep.task = Tasks.build(sites[0]);
+                return;
+            }
+
+            //Upgrade instead
+            if (creep.room.controller) {
+                creep.task = Tasks.upgrade(creep.room.controller);
+                return;
+            }
         }
     }
 }
