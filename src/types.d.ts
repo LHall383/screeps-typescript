@@ -2,21 +2,34 @@
 
 // memory extension samples
 interface CreepMemory {
-  role: string;
-  room: string;
-  working: boolean;
+    role: string;
+    working: boolean;
+    spawnRoom: string;
+}
+
+interface RoomMemory {
+    creepRoleCounts: {
+        data: { [role: string]: number };
+        tick: number;
+    };
+
+    spawnQueue: { memory: CreepMemory; body: BodyPartConstant[] }[];
 }
 
 interface Memory {
-  uuid: number;
-  log: any;
+    uuid: number;
+    log: any;
+}
+
+interface StoreBase<POSSIBLE_RESOURCES extends ResourceConstant, UNLIMITED_STORE extends boolean> {
+    getFreeCapacity(resource: ResourceConstant): number;
 }
 
 // `global` extension samples
 declare namespace NodeJS {
-  interface Global {
-    log: any;
-  }
+    interface Global {
+        log: any;
+    }
 }
 
 interface RoomObject {
