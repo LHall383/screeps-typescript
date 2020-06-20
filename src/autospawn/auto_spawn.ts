@@ -1,3 +1,5 @@
+import { Role } from "enums/RoleName";
+
 export class AutoSpawn {
     public static spawnFromQueue(room: Room) {
         room.memory.spawnQueue = room.memory.spawnQueue || [];
@@ -16,9 +18,15 @@ export class AutoSpawn {
         }
 
         // spawn the first request on the queue
-        const creepToSpawn = room.memory.spawnQueue.shift();
+        const creepToSpawn = room.memory.spawnQueue[0];
         if (creepToSpawn) {
-            freeSpawns[0].spawnCreep(creepToSpawn.body, this.generateName(), { memory: creepToSpawn.memory });
+            const returnCode = freeSpawns[0].spawnCreep(creepToSpawn.body, this.generateName(), {
+                memory: creepToSpawn.memory
+            });
+
+            if (returnCode === OK) {
+                room.memory.spawnQueue.shift();
+            }
         }
     }
 
@@ -39,18 +47,46 @@ export class AutoSpawn {
             room.memory.creepRoleCounts.tick = Game.time;
         }
 
+        const roleCounts = room.memory.creepRoleCounts.data;
+
         // failsafe to restore room, spawn a single harvester to bootstrap the base
-        if (Object.keys(room.memory.creepRoleCounts.data).length === 0) {
-            const creepSpawnRequest = {
-                memory: { role: "harvester", task: null, working: false, spawnRoom: room.name },
+        if (Object.keys(roleCounts).length === 0) {
+            this.addToSpawnQueue(room, {
+                memory: { role: Role.Harvester, task: null, working: false, spawnRoom: room.name },
                 body: [WORK, CARRY, MOVE]
-            };
-            this.addToSpawnQueue(room, creepSpawnRequest);
+            });
         }
+
+        // harvesters
+        if (!roleCounts.harvesters || roleCounts.harvesters < 4) {
+            this.addToSpawnQueue(room, {
+                memory: { role: Role.Harvester, task: null, working: false, spawnRoom: room.name },
+                body: [WORK, CARRY, MOVE]
+            });
+        }
+
+        // builders
+        if (!roleCounts.builders || roleCounts.builders < 2) {
+            this.addToSpawnQueue(room, {
+                memory: { role: Role.Builder, task: null, working: false, spawnRoom: room.name },
+                body: [WORK, CARRY, MOVE]
+            });
+        }
+
+        /*
+        // upgraders
+        if (room.memory.creepRoleCounts.data.upgraders < 4) {
+            this.addToSpawnQueue(room, {
+                memory: { role: "upgraders", task: null, working: false, spawnRoom: room.name },
+                body: [WORK, CARRY, MOVE]
+            });
+        }
+        */
     }
 
     private static addToSpawnQueue(room: Room, creepSpawnRequest: { memory: CreepMemory; body: BodyPartConstant[] }) {
         const roles = _.map(room.memory.spawnQueue, i => i.memory.role);
+
         if (_.contains(roles, creepSpawnRequest.memory.role) === false) {
             room.memory.spawnQueue.push(creepSpawnRequest);
             console.log("Adding to spawn queue: " + JSON.stringify(creepSpawnRequest));
