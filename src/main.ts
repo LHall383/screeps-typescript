@@ -1,7 +1,7 @@
 import { AutoSpawn } from "autospawn/auto_spawn";
 import "creep-tasks/prototypes";
-import { Tasks } from "creep-tasks/Tasks";
-import { RoleHarvester } from "roles/harvester";
+import { RoleName } from "enums/RoleName";
+import { roleDictionary } from "roles";
 import { ErrorMapper } from "utils/ErrorMapper";
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
@@ -30,18 +30,14 @@ export const loop = ErrorMapper.wrapLoop(() => {
     // Search through all the creeps in the game, and perform actions
     for (const name in Game.creeps) {
         const creep = Game.creeps[name];
+        const roleClass = roleDictionary[creep.memory.role as RoleName];
 
-        if (creep.isIdle && creep.memory.role === RoleHarvester.roleName) {
-            console.log(creep.name + " finding new task");
-            RoleHarvester.newTask(creep);
-        } else if (creep.isIdle) {
-            if (creep.carry.energy < creep.carryCapacity) {
-                const sources = creep.room.find(FIND_SOURCES);
-                creep.task = Tasks.harvest(sources[0]);
-            } else {
-                const dest = Game.spawns["Spawn1"];
-                creep.task = Tasks.transfer(dest);
-            }
+        if (!roleClass) {
+            return;
+        }
+
+        if (creep.isIdle) {
+            roleClass.newTask(creep);
         }
 
         creep.run();

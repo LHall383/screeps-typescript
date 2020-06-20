@@ -11,7 +11,7 @@ export type transferTargetType =
     | Creep;
 
 export class TaskTransfer extends Task {
-    static taskName = "transfer";
+    public static taskName = "transfer";
 
     public target: transferTargetType;
     public data: {
