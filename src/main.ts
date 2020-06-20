@@ -1,8 +1,8 @@
-import { ErrorMapper } from "utils/ErrorMapper";
-import 'creep-tasks/prototypes';
-import { Tasks } from 'creep-tasks/Tasks';
-import { RoleHarvester } from 'roles/harvester';
 import { AutoSpawn } from "autospawn/auto_spawn";
+import "creep-tasks/prototypes";
+import { Tasks } from "creep-tasks/Tasks";
+import { RoleHarvester } from "roles/harvester";
+import { ErrorMapper } from "utils/ErrorMapper";
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -20,7 +20,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     for (const roomName in Game.rooms) {
         const room = Game.rooms[roomName];
 
-        let spawns = room.find(FIND_MY_SPAWNS);
+        const spawns = room.find(FIND_MY_SPAWNS);
         if (spawns.length > 0) {
             AutoSpawn.queueSpawns(room);
             AutoSpawn.spawnFromQueue(room);
@@ -31,15 +31,15 @@ export const loop = ErrorMapper.wrapLoop(() => {
     for (const name in Game.creeps) {
         const creep = Game.creeps[name];
 
-        if (creep.isIdle && creep.memory.role == RoleHarvester.roleName) {
-            console.log(creep.name + ' finding new task');
+        if (creep.isIdle && creep.memory.role === RoleHarvester.roleName) {
+            console.log(creep.name + " finding new task");
             RoleHarvester.newTask(creep);
         } else if (creep.isIdle) {
             if (creep.carry.energy < creep.carryCapacity) {
-                let sources = creep.room.find(FIND_SOURCES);
+                const sources = creep.room.find(FIND_SOURCES);
                 creep.task = Tasks.harvest(sources[0]);
             } else {
-                let dest = Game.spawns['Spawn1'];
+                const dest = Game.spawns["Spawn1"];
                 creep.task = Tasks.transfer(dest);
             }
         }
