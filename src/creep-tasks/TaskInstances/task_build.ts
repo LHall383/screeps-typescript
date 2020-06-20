@@ -17,7 +17,6 @@ export class TaskBuild extends Task {
     }
 
     public isValidTask() {
-        console.log(this.creep.store);
         return this.creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
     }
 

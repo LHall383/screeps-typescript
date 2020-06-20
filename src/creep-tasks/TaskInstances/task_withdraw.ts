@@ -38,7 +38,6 @@ export class TaskWithdraw extends Task {
         const amount = this.data.amount || 1;
         const target = this.target;
 
-        console.log(target);
         return (target.store as GenericStore)[this.data.resourceType] >= amount;
     }
 
