@@ -47,10 +47,11 @@ export class AutoSpawn {
             room.memory.creepRoleCounts.tick = Game.time;
         }
 
-        const roleCounts = room.memory.creepRoleCounts.data;
+        const aliveRoleCounts = room.memory.creepRoleCounts.data;
+        const rolesInQueue = room.memory.spawnQueue.map(i => i.memory.role);
 
         // failsafe to restore room, spawn a single harvester to bootstrap the base
-        if (Object.keys(roleCounts).length === 0) {
+        if (Object.keys(aliveRoleCounts).length === 0) {
             this.addToSpawnQueue(room, {
                 memory: { role: RoleName.Harvester, task: null, working: false, spawnRoom: room.name },
                 body: [WORK, CARRY, MOVE]
@@ -58,7 +59,7 @@ export class AutoSpawn {
         }
 
         // harvesters
-        if (!roleCounts.harvesters || roleCounts.harvesters < 4) {
+        if (!_.contains(rolesInQueue, RoleName.Harvester) && (!aliveRoleCounts[RoleName.Harvester] || aliveRoleCounts[RoleName.Harvester] < 4)) {
             this.addToSpawnQueue(room, {
                 memory: { role: RoleName.Harvester, task: null, working: false, spawnRoom: room.name },
                 body: [WORK, CARRY, MOVE]
@@ -66,7 +67,7 @@ export class AutoSpawn {
         }
 
         // builders
-        if (!roleCounts.builders || roleCounts.builders < 2) {
+        if (!_.contains(rolesInQueue, RoleName.Builder) && (!aliveRoleCounts[RoleName.Builder] || aliveRoleCounts[RoleName.Builder] < 2)) {
             this.addToSpawnQueue(room, {
                 memory: { role: RoleName.Builder, task: null, working: false, spawnRoom: room.name },
                 body: [WORK, CARRY, MOVE]
@@ -75,12 +76,8 @@ export class AutoSpawn {
     }
 
     private static addToSpawnQueue(room: Room, creepSpawnRequest: { memory: CreepMemory; body: BodyPartConstant[] }) {
-        const roles = _.map(room.memory.spawnQueue, i => i.memory.role);
-
-        if (_.contains(roles, creepSpawnRequest.memory.role) === false) {
-            room.memory.spawnQueue.push(creepSpawnRequest);
-            console.log("Adding to spawn queue: " + JSON.stringify(creepSpawnRequest));
-        }
+        room.memory.spawnQueue.push(creepSpawnRequest);
+        console.log("Adding to spawn queue: " + JSON.stringify(creepSpawnRequest));
     }
 
     private static CONSONANTS = "bcdfghjklmnpqrstvwxz";
