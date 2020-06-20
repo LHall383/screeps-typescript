@@ -1,4 +1,4 @@
-import { Role } from "enums/RoleName";
+import { RoleName } from "enums/RoleName";
 
 export class AutoSpawn {
     public static spawnFromQueue(room: Room) {
@@ -52,7 +52,7 @@ export class AutoSpawn {
         // failsafe to restore room, spawn a single harvester to bootstrap the base
         if (Object.keys(roleCounts).length === 0) {
             this.addToSpawnQueue(room, {
-                memory: { role: Role.Harvester, task: null, working: false, spawnRoom: room.name },
+                memory: { role: RoleName.Harvester, task: null, working: false, spawnRoom: room.name },
                 body: [WORK, CARRY, MOVE]
             });
         }
@@ -60,7 +60,7 @@ export class AutoSpawn {
         // harvesters
         if (!roleCounts.harvesters || roleCounts.harvesters < 4) {
             this.addToSpawnQueue(room, {
-                memory: { role: Role.Harvester, task: null, working: false, spawnRoom: room.name },
+                memory: { role: RoleName.Harvester, task: null, working: false, spawnRoom: room.name },
                 body: [WORK, CARRY, MOVE]
             });
         }
@@ -68,20 +68,10 @@ export class AutoSpawn {
         // builders
         if (!roleCounts.builders || roleCounts.builders < 2) {
             this.addToSpawnQueue(room, {
-                memory: { role: Role.Builder, task: null, working: false, spawnRoom: room.name },
+                memory: { role: RoleName.Builder, task: null, working: false, spawnRoom: room.name },
                 body: [WORK, CARRY, MOVE]
             });
         }
-
-        /*
-        // upgraders
-        if (room.memory.creepRoleCounts.data.upgraders < 4) {
-            this.addToSpawnQueue(room, {
-                memory: { role: "upgraders", task: null, working: false, spawnRoom: room.name },
-                body: [WORK, CARRY, MOVE]
-            });
-        }
-        */
     }
 
     private static addToSpawnQueue(room: Room, creepSpawnRequest: { memory: CreepMemory; body: BodyPartConstant[] }) {

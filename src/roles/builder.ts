@@ -5,17 +5,21 @@ import { Role } from "./Role";
 export class RoleBuilder extends Role {
     public static roleName: RoleName = RoleName.Builder;
 
-    public static newTask(creep: Creep): void {
+    public newTask(creep: Creep): void {
         if (creep.carry.energy < creep.carryCapacity) {
+            // Withdraw from containers
             const structures = creep.room.find(FIND_STRUCTURES);
-            const containers = structures.filter<StructureContainer>((s): s is StructureContainer => {
-                console.log(s);
-                return !!s;
-            });
+            const containers = structures.filter(s => s.structureType === STRUCTURE_CONTAINER) as StructureContainer[];
 
             if (containers.length > 0) {
                 creep.task = Tasks.withdraw(containers[0], RESOURCE_ENERGY);
+                return;
             }
+
+            // Resort to harvesting if no containers
+            const sources = creep.room.find(FIND_SOURCES);
+            const leastBusySource = _.sortBy(sources, source => source.targetedBy.length)[0];
+            creep.task = Tasks.harvest(leastBusySource);
             return;
         }
 

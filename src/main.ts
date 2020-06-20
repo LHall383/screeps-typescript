@@ -1,8 +1,8 @@
 import { AutoSpawn } from "autospawn/auto_spawn";
 import "creep-tasks/prototypes";
 import { RoleName } from "enums/RoleName";
+import { roleDictionary } from "roles";
 import { ErrorMapper } from "utils/ErrorMapper";
-import { RoleMapper } from "utils/RoleMapper";
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -30,10 +30,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
     // Search through all the creeps in the game, and perform actions
     for (const name in Game.creeps) {
         const creep = Game.creeps[name];
+        const roleClass = roleDictionary[creep.memory.role as RoleName];
 
-        const roleClass = RoleMapper.mapEnumToClass(creep.memory.role as RoleName);
-
-        if (roleClass === undefined) {
+        if (!roleClass) {
             return;
         }
 

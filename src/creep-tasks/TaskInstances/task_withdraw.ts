@@ -2,13 +2,7 @@
 
 import { Task } from "../Task";
 
-export type withdrawTargetType =
-    | StructureStorage
-    | StructureContainer
-    | StructureLab
-    | StructureNuker
-    | StructurePowerSpawn
-    | Tombstone;
+export type withdrawTargetType = StructureStorage | StructureContainer | StructureLab | StructureNuker | StructurePowerSpawn | Tombstone;
 
 export class TaskWithdraw extends Task {
     static taskName = "withdraw";
@@ -44,6 +38,7 @@ export class TaskWithdraw extends Task {
         const amount = this.data.amount || 1;
         const target = this.target;
 
+        console.log(target);
         return (target.store as GenericStore)[this.data.resourceType] >= amount;
     }
 
