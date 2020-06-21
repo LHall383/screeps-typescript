@@ -7,38 +7,34 @@ export class RoleHarvester extends Role {
 
     public newTask(creep: Creep): void {
         if (creep.carry.energy < creep.carryCapacity) {
-            // find the active source with the least harvesters currently on it
-            const sources = creep.room.find(FIND_SOURCES_ACTIVE);
-            if (sources != null) {
-                const leastBusySource = _.sortBy(sources, source => source.targetedBy.length)[0];
-                creep.task = Tasks.harvest(leastBusySource);
-                return;
-            }
-
-            // find other energy sources if no in game sources are active
+            // Find Structures for getting energy
             const structures = creep.room.find(FIND_STRUCTURES);
-            const containersWithEnergy = structures.filter(s => s.structureType === STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0) as StructureContainer[];
-            const storageWithEnergy = structures.filter(s => s.structureType === STRUCTURE_STORAGE && s.store[RESOURCE_ENERGY] > 0) as StructureStorage[];
-            const droppedEnergy = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, { filter: (d) => d.resourceType === RESOURCE_ENERGY });
 
             // Withdraw from containers
+            const containersWithEnergy = structures.filter(s => s.structureType === STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0) as StructureContainer[];
             if (containersWithEnergy.length > 0) {
                 creep.task = Tasks.withdraw(containersWithEnergy[0], RESOURCE_ENERGY);
                 return;
             }
 
             // Pickup dropped energy
+            const droppedEnergy = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, { filter: (d) => d.resourceType === RESOURCE_ENERGY });
             if (droppedEnergy != null) {
                 creep.task = Tasks.pickup(droppedEnergy);
                 return;
             }
 
             // Pull energy from storage
+            const storageWithEnergy = structures.filter(s => s.structureType === STRUCTURE_STORAGE && s.store[RESOURCE_ENERGY] > 0) as StructureStorage[];
             if (storageWithEnergy.length > 0) {
                 creep.task = Tasks.withdraw(storageWithEnergy[0], RESOURCE_ENERGY);
                 return;
             }
 
+            // If energy is not available at the time continue to transfer tasks (minimize idle time)
+            if (creep.carry.energy < creep.carryCapacity / 2) {
+                return;
+            }
         }
 
         // Look for spawns that aren't full first
@@ -68,32 +64,12 @@ export class RoleHarvester extends Role {
             return;
         }
 
-        // Build instead
-        const sites = creep.room.find(FIND_MY_CONSTRUCTION_SITES);
-        if (sites.length) {
-            creep.task = Tasks.build(sites[0]);
-            return;
-        }
-
-        //Repair main structures instead
-        const mainRepairs = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-            filter: s => {
-                return (s.structureType == STRUCTURE_EXTENSION ||
-                    s.structureType == STRUCTURE_SPAWN ||
-                    s.structureType == STRUCTURE_TOWER ||
-                    s.structureType == STRUCTURE_LAB ||
-                    s.structureType == STRUCTURE_STORAGE ||
-                    s.structureType == STRUCTURE_CONTAINER) && s.hits < s.hitsMax;
-            }
+        // Look for storage that isn't full
+        const storage = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+            filter: s => s.structureType === STRUCTURE_STORAGE && s.store.getFreeCapacity() > 0
         });
-        if (mainRepairs != null) {
-            creep.task = Tasks.repair(mainRepairs);
-            return;
-        }
-
-        // Upgrade instead
-        if (creep.room.controller) {
-            creep.task = Tasks.upgrade(creep.room.controller);
+        if (storage && storage.structureType === STRUCTURE_STORAGE) {
+            creep.task = Tasks.transferAll(storage);
             return;
         }
     }

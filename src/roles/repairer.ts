@@ -2,8 +2,8 @@ import { RoleName } from "enums/RoleName";
 import { Tasks } from "../creep-tasks/Tasks";
 import { Role } from "./Role";
 
-export class RoleBuilder extends Role {
-    public static roleName: RoleName = RoleName.Builder;
+export class RoleRepairer extends Role {
+    public static roleName: RoleName = RoleName.Repairer;
 
     public newTask(creep: Creep): void {
         if (creep.carry.energy < creep.carryCapacity) {
@@ -31,14 +31,8 @@ export class RoleBuilder extends Role {
             return;
         }
 
-        // Find construction sites
-        const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
-        if (constructionSites.length) {
-            creep.task = Tasks.build(constructionSites[0]);
-            return;
-        }
 
-        // Repair main structures if no construction sites
+        // Repair main structures
         const mainRepairs = creep.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: s => {
                 return (s.structureType == STRUCTURE_EXTENSION ||
@@ -46,6 +40,15 @@ export class RoleBuilder extends Role {
                     s.structureType == STRUCTURE_TOWER ||
                     s.structureType == STRUCTURE_LAB ||
                     s.structureType == STRUCTURE_STORAGE ||
+                    s.structureType == STRUCTURE_NUKER ||
+                    s.structureType == STRUCTURE_TERMINAL ||
+                    s.structureType == STRUCTURE_OBSERVER ||
+                    s.structureType == STRUCTURE_PORTAL ||
+                    s.structureType == STRUCTURE_POWER_BANK ||
+                    s.structureType == STRUCTURE_POWER_SPAWN ||
+                    s.structureType == STRUCTURE_EXTRACTOR ||
+                    s.structureType == STRUCTURE_FACTORY ||
+                    s.structureType == STRUCTURE_LINK ||
                     s.structureType == STRUCTURE_CONTAINER) && s.hits < s.hitsMax;
             }
         });
@@ -54,7 +57,30 @@ export class RoleBuilder extends Role {
             return;
         }
 
-        // Upgrade as a last resort
+        // Repair walls
+        const wallRepairs = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+            filter: (s) => {
+                return (s.structureType == STRUCTURE_WALL ||
+                    s.structureType == STRUCTURE_RAMPART) && s.hits <= 20000;
+            }
+        });
+        if (wallRepairs != null) {
+            creep.task = Tasks.repair(wallRepairs);
+            return;
+        }
+
+        // Repair roads
+        var roadRepairs = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return (structure.structureType == STRUCTURE_ROAD) && structure.hits < structure.hitsMax;
+            }
+        });
+        if (roadRepairs != null) {
+            creep.task = Tasks.repair(roadRepairs);
+            return;
+        }
+
+        // Upgrade if nothing left to repair
         if (creep.room.controller) {
             creep.task = Tasks.upgrade(creep.room.controller);
             return;

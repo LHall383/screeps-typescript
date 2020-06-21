@@ -2,8 +2,8 @@ import { RoleName } from "enums/RoleName";
 import { Tasks } from "../creep-tasks/Tasks";
 import { Role } from "./Role";
 
-export class RoleBuilder extends Role {
-    public static roleName: RoleName = RoleName.Builder;
+export class RoleUpgrader extends Role {
+    public static roleName: RoleName = RoleName.Upgrader;
 
     public newTask(creep: Creep): void {
         if (creep.carry.energy < creep.carryCapacity) {
@@ -31,30 +31,7 @@ export class RoleBuilder extends Role {
             return;
         }
 
-        // Find construction sites
-        const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
-        if (constructionSites.length) {
-            creep.task = Tasks.build(constructionSites[0]);
-            return;
-        }
-
-        // Repair main structures if no construction sites
-        const mainRepairs = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-            filter: s => {
-                return (s.structureType == STRUCTURE_EXTENSION ||
-                    s.structureType == STRUCTURE_SPAWN ||
-                    s.structureType == STRUCTURE_TOWER ||
-                    s.structureType == STRUCTURE_LAB ||
-                    s.structureType == STRUCTURE_STORAGE ||
-                    s.structureType == STRUCTURE_CONTAINER) && s.hits < s.hitsMax;
-            }
-        });
-        if (mainRepairs != null) {
-            creep.task = Tasks.repair(mainRepairs);
-            return;
-        }
-
-        // Upgrade as a last resort
+        // Upgrade Room Controller
         if (creep.room.controller) {
             creep.task = Tasks.upgrade(creep.room.controller);
             return;
