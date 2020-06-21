@@ -6,9 +6,12 @@ export class RoleContainerMiner extends Role {
     public static roleName: string = RoleName.ContainerMiner;
 
     public newTask(creep: Creep): void {
+        // Find active sources
         const sources = creep.room.find(FIND_SOURCES_ACTIVE);
         const untargetedSources = [];
         var i;
+
+        // Loop through sources to find which ones currently don't have a container miner on them
         for (i in sources) {
             const targetingCreeps = sources[i].targetedBy;
             var j;
@@ -23,6 +26,7 @@ export class RoleContainerMiner extends Role {
             }
         }
 
+        // Mine source without container miner already assigned to it
         if (untargetedSources.length > 0) {
             creep.task = Tasks.harvest(untargetedSources[0]);
             return;
