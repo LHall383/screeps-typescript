@@ -57,6 +57,17 @@ export class RoleRepairer extends Role {
             return;
         }
 
+        // Repair roads
+        var roadRepairs = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return (structure.structureType === STRUCTURE_ROAD) && structure.hits < structure.hitsMax;
+            }
+        });
+        if (roadRepairs != null) {
+            creep.task = Tasks.repair(roadRepairs);
+            return;
+        }
+
         // Repair walls
         const wallRepairs = creep.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: (s) => {
@@ -66,17 +77,6 @@ export class RoleRepairer extends Role {
         });
         if (wallRepairs != null) {
             creep.task = Tasks.repair(wallRepairs);
-            return;
-        }
-
-        // Repair roads
-        var roadRepairs = creep.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter: (structure) => {
-                return (structure.structureType === STRUCTURE_ROAD) && structure.hits < structure.hitsMax;
-            }
-        });
-        if (roadRepairs != null) {
-            creep.task = Tasks.repair(roadRepairs);
             return;
         }
 
