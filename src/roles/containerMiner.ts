@@ -17,11 +17,11 @@ export class RoleContainerMiner extends Role {
             var j;
             var unmined = true;
             for (j in targetingCreeps) {
-                if (targetingCreeps[j].memory.role == "containerMiner") {
+                if (targetingCreeps[j].memory.role === "containerMiner") {
                     unmined = false;
                 }
             }
-            if (unmined == true) {
+            if (unmined === true) {
                 untargetedSources.push(sources[i]);
             }
         }
