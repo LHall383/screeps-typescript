@@ -13,5 +13,5 @@ export const roleDictionary: { [name in RoleName]: Role } = {
     [RoleName.Upgrader]: new RoleUpgrader(),
     [RoleName.ContainerMiner]: new RoleContainerMiner(),
     [RoleName.Transporter]: new RoleTransporter(),
-    [RoleName.Repairer]: new RoleRepairer(),
+    [RoleName.Repairer]: new RoleRepairer()
 };
