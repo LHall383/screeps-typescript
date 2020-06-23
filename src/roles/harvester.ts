@@ -6,7 +6,7 @@ export class RoleHarvester extends Role {
     public static roleName: string = RoleName.Harvester;
 
     public newTask(creep: Creep): void {
-        if (creep.carry.energy < creep.carryCapacity) {
+        if (creep.store.energy < creep.store.getCapacity()) {
             // find the active source with the least harvesters currently on it
             const sources = creep.room.find(FIND_SOURCES_ACTIVE);
             if (sources != null) {

@@ -6,7 +6,7 @@ export class RoleRepairer extends Role {
     public static roleName: RoleName = RoleName.Repairer;
 
     public newTask(creep: Creep): void {
-        if (creep.carry.energy < creep.carryCapacity) {
+        if (creep.store.energy < creep.store.getCapacity()) {
             // Find Structures for getting energy
             const structures = creep.room.find(FIND_STRUCTURES);
 

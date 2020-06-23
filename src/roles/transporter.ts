@@ -6,7 +6,7 @@ export class RoleTransporter extends Role {
     public static roleName: string = RoleName.Transporter;
 
     public newTask(creep: Creep): void {
-        if (creep.carry.energy < creep.carryCapacity) {
+        if (creep.store.energy < creep.store.getCapacity()) {
             // Find Structures for getting energy
             const structures = creep.room.find(FIND_STRUCTURES);
 
@@ -32,7 +32,7 @@ export class RoleTransporter extends Role {
             }
 
             // If energy is not available at the time continue to transfer tasks (minimize idle time)
-            if (creep.carry.energy < creep.carryCapacity / 2) {
+            if (creep.store.energy < creep.store.getCapacity() / 2) {
                 return;
             }
         }
