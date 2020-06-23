@@ -3,7 +3,6 @@ import "creep-tasks/prototypes";
 import { RoleName } from "enums/RoleName";
 import { roleDictionary } from "roles";
 import { ErrorMapper } from "utils/ErrorMapper";
-import { AutoBuilding } from "autobuilding/auto_base_building";
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -26,8 +25,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
             AutoSpawn.queueSpawns(room);
             AutoSpawn.spawnFromQueue(room);
         }
-
-        AutoBuilding.placeContainers(room);
     }
 
     // Search through all the creeps in the game, and perform actions

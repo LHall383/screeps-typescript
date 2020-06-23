@@ -13,8 +13,6 @@ interface RoomMemory {
         tick: number;
     };
 
-    hasPlacedContainerSites: boolean;
-
     spawnQueue: { memory: CreepMemory; body: BodyPartConstant[] }[];
 }
 
