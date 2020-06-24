@@ -5,7 +5,7 @@ type Coordinate = {
 }
 
 type BuildQueueRequest = {
-    structType: StructureConstant;
+    structType: BuildableStructureConstant;
     location: Coordinate;
     priority: number;
 };

@@ -37,15 +37,24 @@ export class AutoBasePlanning {
     ];
 
     // Check if the provided layout is constructible in the position provided
-    private static canPlaceLayout(layout: BuildableStructureConstant[][], layoutWidth: number, layoutHeight: number, checkPos: RoomPosition): boolean {
-        const terrain = Game.rooms[checkPos.roomName].getTerrain();
+    private static canPlaceLayout(layout: BuildableStructureConstant[][], layoutWidth: number, layoutHeight: number, checkPos: RoomPosition, checkRoom: Room): boolean {
+        // Get terrain map
+        const terrain = checkRoom.getTerrain();
+
+        // Locate sources
+        const sources = checkRoom.find(FIND_SOURCES);
 
         for (let checkX = checkPos.x; checkX < checkPos.x + layoutWidth; checkX++) {
             for (let checkY = checkPos.y; checkY < checkPos.y + layoutHeight; checkY++) {
+                // Can't build on walls
                 if (terrain.get(checkX, checkY) === TERRAIN_MASK_WALL) {
                     return false;
                 }
-
+                // Don't want to build directly next to a source
+                if ((sources[0] && checkPos.isNearTo(sources[0]))
+                    || (sources[1] && checkPos.isNearTo(sources[1]))) {
+                    return false;
+                }
             }
         }
 
@@ -104,7 +113,7 @@ export class AutoBasePlanning {
                 const pos = room.getPositionAt(x, y) || new RoomPosition(x, y, room.name);
 
                 // check if layout can be placed
-                const canPlace = this.canPlaceLayout(this.coreLayout, layoutWidth, layoutHeight, pos);
+                const canPlace = this.canPlaceLayout(this.coreLayout, layoutWidth, layoutHeight, pos, room);
 
                 // get a score for this base location
                 if (canPlace) {

@@ -5,6 +5,7 @@ import { roleDictionary } from "roles";
 import { ErrorMapper } from "utils/ErrorMapper";
 import { AutoBaseBuilding } from "autobuilding/auto_base_building";
 import { AutoBasePlanning } from "autobuilding/auto_base_planning";
+import { BuildQueue } from "autobuilding/build_queue";
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -35,6 +36,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
         }
 
         AutoBaseBuilding.placeContainers(room);
+        BuildQueue.buildFromQueue(room);
     }
 
     // Search through all the creeps in the game, and perform actions
