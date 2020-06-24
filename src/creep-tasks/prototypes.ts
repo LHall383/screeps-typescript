@@ -1,12 +1,12 @@
 // This binds a getter/setter creep.task property
 
-import {initializeTask} from './utilities/initializer';
-import {TargetCache} from './utilities/caching';
+import { initializeTask } from './utilities/initializer';
+import { TargetCache } from './utilities/caching';
 
 Object.defineProperty(Creep.prototype, 'task', {
 	get() {
 		if (!this._task) {
-			let protoTask = this.memory.task;
+			const protoTask = this.memory.task;
 			this._task = protoTask ? initializeTask(protoTask) : null;
 		}
 		return this._task;
@@ -15,11 +15,11 @@ Object.defineProperty(Creep.prototype, 'task', {
 		// Assert that there is an up-to-date target cache
 		TargetCache.assert();
 		// Unregister target from old task if applicable
-		let oldProtoTask = this.memory.task as protoTask;
+		const oldProtoTask = this.memory.task as protoTask;
 		if (oldProtoTask) {
-			let oldRef = oldProtoTask._target.ref;
+			const oldRef = oldProtoTask._target.ref;
 			if (Game.TargetCache.targets[oldRef]) {
-				_.remove(Game.TargetCache.targets[oldRef], name => name == this.name);
+				_.remove(Game.TargetCache.targets[oldRef], name => name === this.name);
 			}
 		}
 		// Set the new task
@@ -52,7 +52,7 @@ Object.defineProperties(Creep.prototype, {
 			return this.task && this.task.isValid();
 		}
 	},
-	'isIdle'      : {
+	'isIdle': {
 		get() {
 			return !this.hasValidTask;
 		}
@@ -116,9 +116,9 @@ RoomPosition.prototype.isPassible = function (ignoreCreeps = false): boolean {
 		// Are there structures?
 		let impassibleStructures = _.filter(this.lookFor(LOOK_STRUCTURES), function (s: Structure) {
 			return s.structureType != STRUCTURE_ROAD &&
-				   s.structureType != STRUCTURE_CONTAINER &&
-				   !(s.structureType == STRUCTURE_RAMPART && ((<StructureRampart>s).my ||
-															  (<StructureRampart>s).isPublic));
+				s.structureType != STRUCTURE_CONTAINER &&
+				!(s.structureType == STRUCTURE_RAMPART && ((<StructureRampart>s).my ||
+					(<StructureRampart>s).isPublic));
 		});
 		return impassibleStructures.length == 0;
 	}

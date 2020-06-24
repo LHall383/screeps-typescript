@@ -3,7 +3,8 @@ import "creep-tasks/prototypes";
 import { RoleName } from "enums/RoleName";
 import { roleDictionary } from "roles";
 import { ErrorMapper } from "utils/ErrorMapper";
-import { AutoBuilding } from "autobuilding/auto_base_building";
+import { AutoBaseBuilding } from "autobuilding/auto_base_building";
+import { AutoBasePlanning } from "autobuilding/auto_base_planning";
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -17,17 +18,23 @@ export const loop = ErrorMapper.wrapLoop(() => {
         }
     }
 
-    // Look through all rooms with a spawn and queue spawns, then perform spawns
+    // Look through all rooms
     for (const roomName in Game.rooms) {
         const room = Game.rooms[roomName];
 
+        // If we own a spawn, perform autospawning
         const spawns = room.find(FIND_MY_SPAWNS);
         if (spawns.length > 0) {
             AutoSpawn.queueSpawns(room);
             AutoSpawn.spawnFromQueue(room);
         }
 
-        AutoBuilding.placeContainers(room);
+        // If we own this room, then perform base planning
+        if (room.controller && room.controller.my) {
+            AutoBasePlanning.planCoreLayout(room);
+        }
+
+        AutoBaseBuilding.placeContainers(room);
     }
 
     // Search through all the creeps in the game, and perform actions

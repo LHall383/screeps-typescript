@@ -46,7 +46,7 @@ export class RoleHarvester extends Role {
 
         // Look for spawns that aren't full first
         const spawn = creep.pos.findClosestByPath(FIND_MY_SPAWNS, {
-            filter: spawn => spawn.store[RESOURCE_ENERGY] < spawn.store.getCapacity(RESOURCE_ENERGY)
+            filter: s => s.store[RESOURCE_ENERGY] < s.store.getCapacity(RESOURCE_ENERGY)
         });
         if (spawn) {
             creep.task = Tasks.transfer(spawn);

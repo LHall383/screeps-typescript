@@ -1,4 +1,4 @@
-export class AutoBuilding {
+export class AutoBaseBuilding {
     public static placeContainers(room: Room) {
         // This could probably be improved, we never check if containers get built correctly or anything
         if (room.memory.hasPlacedContainerSites) {
