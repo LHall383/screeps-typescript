@@ -3,6 +3,7 @@ import "creep-tasks/prototypes";
 import { RoleName } from "enums/RoleName";
 import { roleDictionary } from "roles";
 import { ErrorMapper } from "utils/ErrorMapper";
+import { Config } from "example.config";
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -20,10 +21,12 @@ export const loop = ErrorMapper.wrapLoop(() => {
     for (const roomName in Game.rooms) {
         const room = Game.rooms[roomName];
 
-        const spawns = room.find(FIND_MY_SPAWNS);
-        if (spawns.length > 0) {
-            AutoSpawn.queueSpawns(room);
-            AutoSpawn.spawnFromQueue(room);
+        if (Game.time % Config.TICKS_PER_EXECUTE.AUTOSPAWNING === 0) {
+            const spawns = room.find(FIND_MY_SPAWNS);
+            if (spawns.length > 0) {
+                AutoSpawn.queueSpawns(room);
+                AutoSpawn.spawnFromQueue(room);
+            }
         }
     }
 
