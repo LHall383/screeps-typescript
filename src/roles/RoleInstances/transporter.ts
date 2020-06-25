@@ -1,6 +1,6 @@
 import { RoleName } from "enums/RoleName";
-import { Tasks } from "../creep-tasks/Tasks";
-import { Role } from "./Role";
+import { Tasks } from "../../creep-tasks/Tasks";
+import { Role } from "../Role";
 
 export class RoleTransporter extends Role {
     public static roleName: string = RoleName.Transporter;
