@@ -1,9 +1,9 @@
 import { AutoSpawn } from "autospawn/auto_spawn";
 import "creep-tasks/prototypes";
 import { RoleName } from "enums/RoleName";
+import { Config } from "example.config";
 import { roleDictionary } from "roles";
 import { ErrorMapper } from "utils/ErrorMapper";
-import { Config } from "example.config";
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
