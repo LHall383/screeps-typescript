@@ -1,7 +1,7 @@
 // This binds a getter/setter creep.task property
 
-import {initializeTask} from './utilities/initializer';
-import {TargetCache} from './utilities/caching';
+import { initializeTask } from './utilities/initializer';
+import { TargetCache } from './utilities/caching';
 
 Object.defineProperty(Creep.prototype, 'task', {
 	get() {
@@ -41,9 +41,18 @@ Object.defineProperty(Creep.prototype, 'task', {
 });
 
 Creep.prototype.run = function (): number | void {
+	this.universals();
 	if (this.task) {
 		return this.task.run();
 	}
+};
+
+Creep.prototype.universals = function (): void {
+
+};
+
+Creep.prototype.tellRoomPosition = function (): void {
+	this.room.memory.locationUtilization[this.pos.x][this.pos.y] += 1;
 };
 
 Object.defineProperties(Creep.prototype, {
@@ -52,7 +61,7 @@ Object.defineProperties(Creep.prototype, {
 			return this.task && this.task.isValid();
 		}
 	},
-	'isIdle'      : {
+	'isIdle': {
 		get() {
 			return !this.hasValidTask;
 		}
@@ -116,9 +125,9 @@ RoomPosition.prototype.isPassible = function (ignoreCreeps = false): boolean {
 		// Are there structures?
 		let impassibleStructures = _.filter(this.lookFor(LOOK_STRUCTURES), function (s: Structure) {
 			return s.structureType != STRUCTURE_ROAD &&
-				   s.structureType != STRUCTURE_CONTAINER &&
-				   !(s.structureType == STRUCTURE_RAMPART && ((<StructureRampart>s).my ||
-															  (<StructureRampart>s).isPublic));
+				s.structureType != STRUCTURE_CONTAINER &&
+				!(s.structureType == STRUCTURE_RAMPART && ((<StructureRampart>s).my ||
+					(<StructureRampart>s).isPublic));
 		});
 		return impassibleStructures.length == 0;
 	}

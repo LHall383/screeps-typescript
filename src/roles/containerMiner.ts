@@ -17,6 +17,7 @@ export class RoleContainerMiner extends Role {
             var j;
             var unmined = true;
             for (j in targetingCreeps) {
+
                 if (targetingCreeps[j].memory.role === "containerMiner") {
                     unmined = false;
                 }

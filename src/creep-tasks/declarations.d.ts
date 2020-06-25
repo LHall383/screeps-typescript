@@ -81,6 +81,8 @@ interface Creep {
 	isIdle: boolean;
 
 	run(): number | void;
+	universals(): void;
+	tellRoomPosition(): void;
 }
 
 interface protoPos {

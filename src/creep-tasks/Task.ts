@@ -12,8 +12,8 @@
  * If you use Traveler, change all occurrences of creep.moveTo() to creep.travelTo()
  */
 
-import {initializeTask} from './utilities/initializer';
-import {deref, derefRoomPosition} from './utilities/helpers';
+import { initializeTask } from './utilities/initializer';
+import { deref, derefRoomPosition } from './utilities/helpers';
 
 export type targetType = { ref: string, pos: RoomPosition }; // overwrite this variable in derived classes to specify more precise typing
 
@@ -48,15 +48,15 @@ export abstract class Task implements ITask {
 		};
 		if (target) { // Handles edge cases like when you're done building something and target disappears
 			this._target = {
-				ref : target.ref,
+				ref: target.ref,
 				_pos: target.pos,
 			};
 		} else {
 			this._target = {
-				ref : '',
+				ref: '',
 				_pos: {
-					x       : -1,
-					y       : -1,
+					x: -1,
+					y: -1,
 					roomName: '',
 				}
 			};
@@ -65,10 +65,10 @@ export abstract class Task implements ITask {
 		this.settings = {
 			targetRange: 1,		// range at which you can perform action
 			workOffRoad: false,	// whether work() should be performed off road
-			oneShot    : false, // remove this task once work() returns OK, regardless of validity
+			oneShot: false, // remove this task once work() returns OK, regardless of validity
 		};
 		_.defaults(options, {
-			blind      : false,
+			blind: false,
 			moveOptions: {},
 		});
 		this.tick = Game.time;
@@ -80,13 +80,13 @@ export abstract class Task implements ITask {
 
 	get proto(): protoTask {
 		return <protoTask>{
-			name   : this.name,
-			_creep : this._creep,
+			name: this.name,
+			_creep: this._creep,
 			_target: this._target,
 			_parent: this._parent,
 			options: this.options,
-			data   : this.data,
-			tick   : this.tick,
+			data: this.data,
+			tick: this.tick,
 		};
 	}
 
@@ -114,15 +114,15 @@ export abstract class Task implements ITask {
 		return deref(this._target.ref);
 	}
 
-    set target(target: RoomObject | null) {
-        if( target === null ){
-            this._target.ref = "";
-            this._target._pos = {x:-1, y:-1, roomName:""};
-        } else {
-            this._target.ref = target.id;
-            this._target._pos = target.pos;
-        }
-    }
+	set target(target: RoomObject | null) {
+		if (target === null) {
+			this._target.ref = "";
+			this._target._pos = { x: -1, y: -1, roomName: "" };
+		} else {
+			this._target.ref = target.id;
+			this._target._pos = target.pos;
+		}
+	}
 
 	// Dereferences the saved target position; useful for situations where you might lose vision
 	get targetPos(): RoomPosition {
@@ -221,6 +221,7 @@ export abstract class Task implements ITask {
 		if (this.options.moveOptions && !this.options.moveOptions.range) {
 			this.options.moveOptions.range = range;
 		}
+		this.creep.tellRoomPosition();
 		return this.creep.moveTo(this.targetPos, this.options.moveOptions);
 		// return this.creep.travelTo(this.targetPos, this.options.moveOptions); // <- switch if you use Traveler
 	}
@@ -232,7 +233,7 @@ export abstract class Task implements ITask {
 			return this.creep.moveTo(nextPos);
 			// return this.creep.travelTo(nextPos); // <- switch if you use Traveler
 		}
-    return undefined;
+		return undefined;
 	}
 
 	// Return expected number of ticks until creep arrives at its first destination; this requires Traveler to work!
@@ -240,7 +241,7 @@ export abstract class Task implements ITask {
 		if (this.creep && (<any>this.creep.memory)._trav) {
 			return (<any>this.creep.memory)._trav.path.length;
 		}
-    return undefined;
+		return undefined;
 	}
 
 	// Execute this task each tick. Returns nothing unless work is done.
@@ -256,6 +257,7 @@ export abstract class Task implements ITask {
 			}
 			return result;
 		} else {
+
 			this.moveToTarget();
 		}
 	}
