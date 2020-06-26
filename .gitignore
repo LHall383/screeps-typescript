@@ -1,3 +1,6 @@
+# configuration file for the ai
+/src/config.ts
+
 # yarn lock file
 /yarn.lock
 

@@ -1,6 +1,7 @@
 import { AutoSpawn } from "autospawn/auto_spawn";
 import "creep-tasks/prototypes";
 import { RoleName } from "enums/RoleName";
+import { Config } from "example.config";
 import { roleDictionary } from "roles";
 import { ErrorMapper } from "utils/ErrorMapper";
 import { AutoBuilding } from "autobuilding/auto_base_building"
@@ -31,10 +32,12 @@ export const loop = ErrorMapper.wrapLoop(() => {
             }
         }
 
-        const spawns = room.find(FIND_MY_SPAWNS);
-        if (spawns.length > 0) {
-            AutoSpawn.queueSpawns(room);
-            AutoSpawn.spawnFromQueue(room);
+        if (Game.time % Config.TICKS_PER_EXECUTE.AUTOSPAWNING === 0) {
+            const spawns = room.find(FIND_MY_SPAWNS);
+            if (spawns.length > 0) {
+                AutoSpawn.queueSpawns(room);
+                AutoSpawn.spawnFromQueue(room);
+            }
         }
         if (Game.time % 1000 === 0) {
             AutoBuilding.placeRoads(room);
