@@ -14,6 +14,8 @@ interface RoomMemory {
     };
 
     spawnQueue: { memory: CreepMemory; body: BodyPartConstant[] }[];
+
+    locationUtilization: number[][];
 }
 
 interface Memory {

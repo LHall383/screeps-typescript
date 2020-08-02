@@ -41,9 +41,18 @@ Object.defineProperty(Creep.prototype, 'task', {
 });
 
 Creep.prototype.run = function (): number | void {
+	this.universals();
 	if (this.task) {
 		return this.task.run();
 	}
+};
+
+Creep.prototype.universals = function (): void {
+
+};
+
+Creep.prototype.tellRoomPosition = function (): void {
+	this.room.memory.locationUtilization[this.pos.x][this.pos.y] += 1;
 };
 
 Object.defineProperties(Creep.prototype, {
