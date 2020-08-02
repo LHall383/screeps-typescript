@@ -16,6 +16,8 @@ interface RoomMemory {
     hasPlacedContainerSites: boolean;
 
     spawnQueue: { memory: CreepMemory; body: BodyPartConstant[] }[];
+
+    locationUtilization: number[][];
 }
 
 interface Memory {
