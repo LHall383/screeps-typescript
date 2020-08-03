@@ -25,7 +25,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
         if (!room.memory.locationUtilization) {
             room.memory.locationUtilization = [];
             for (let i = 0; i < 50; i++) {
-                let dummyArray = [];
+                const dummyArray = [];
                 for (let j = 0; j < 50; j++) {
                     dummyArray[j] = 0;
                 }
@@ -43,16 +43,13 @@ export const loop = ErrorMapper.wrapLoop(() => {
         // If we own this room, then perform base planning
         if (room.controller && room.controller.my) {
             AutoBasePlanning.planCoreLayout(room);
-        }
+            AutoBaseBuilding.placeContainers(room);
 
-        AutoBaseBuilding.placeContainers(room);
+            if (Game.time % 10 === 0) {
+                AutoBaseBuilding.placeRoads(room);
+            }
+        }
         BuildQueue.buildFromQueue(room);
-
-        if (Game.time % 1000 === 0) {
-            AutoBaseBuilding.placeRoads(room);
-        }
-
-        AutoBaseBuilding.placeContainers(room);
     }
 
     // Search through all the creeps in the game, and perform actions

@@ -36,7 +36,7 @@ export class AutoBasePlanning {
         [9, 5, 9, 6, 9]
     ];
 
-    // Check if the provided layout is constructible in the position provided
+    /* Check if the provided layout is constructible in the position provided */
     private static canPlaceLayout(layout: BuildableStructureConstant[][], layoutWidth: number, layoutHeight: number, checkPos: RoomPosition, checkRoom: Room): boolean {
         // Get terrain map
         const terrain = checkRoom.getTerrain();
@@ -61,7 +61,7 @@ export class AutoBasePlanning {
         return true;
     }
 
-    // Calculated a fitness score for a base centered at the provided position, lower score is better
+    /* Calculate a fitness score for a base centered at the provided position, lower score is better */
     private static calcBaseFitness(room: Room, baseCenter: RoomPosition): number {
         let score = 0;
 
@@ -93,7 +93,7 @@ export class AutoBasePlanning {
         return score;
     }
 
-    // Plan the fixed core layout of the room and add to build queue
+    /* Plan the fixed core layout of the room and add to build queue */
     public static planCoreLayout(room: Room) {
         // check if this room has already been planned for, if so, exit early
         room.memory.basePlan = room.memory.basePlan || {} as { corner: Coordinate; center: Coordinate; };
@@ -144,7 +144,7 @@ export class AutoBasePlanning {
             for (let y = 0; y < layoutHeight; y++) {
                 const structType = this.coreLayout[x][y];
                 const location = { x: best.corner.x + x, y: best.corner.y + y } as Coordinate;
-                const priority = (BuildQueue.buildPriorities.get(structType) || Infinity) + this.corePriorityIncrease[x][y];
+                const priority = BuildQueue.getBuildPriority(structType) + this.corePriorityIncrease[x][y];
                 const request = { structType, location, priority } as BuildQueueRequest;
                 BuildQueue.addToBuildQueue(room, request);
             }

@@ -2,45 +2,32 @@ import { BuildQueue } from "./build_queue";
 
 export class AutoBaseBuilding {
     public static placeContainers(room: Room) {
-        // This could probably be improved, we never check if containers get built correctly or anything
+        // TODO: This could probably be improved, we never check if containers get built correctly or anything
         if (room.memory.hasPlacedContainerSites) {
             return;
         }
 
+        // Only run for rooms that already contain a spawn
         const sources = room.find(FIND_SOURCES);
         const spawns = room.find(FIND_MY_SPAWNS);
         if (spawns.length === 0) {
             return;
         }
 
-        // Sort sources if we're doing Mark's s̶t̶u̶p̶i̶d̶  thing
-        // const sortedSources = sources.sort(source => this.sortByClosestToSpawn(source.pos, spawns[0]));
-
+        // Get valid spots for containers to be placed
         sources.forEach(source => {
-            const containerSiteOptions = [];
-            for (let x = -1; x < 2; x++) {
-                for (let y = -1; y < 2; y++) {
-                    // Skip source
-                    if (x === 0 && y === 0) {
-                        continue;
-                    }
-
-                    containerSiteOptions.push({
-                        x: x + source.pos.x,
-                        y: y + source.pos.y
-                    });
-                }
-            }
+            const containerSiteOptions = source.pos.neighbors;
 
             const validContainerSitePositions = containerSiteOptions
                 .filter(siteOption => this.isValidContainerPosition(room, siteOption.x, siteOption.y))
                 .map(position => new RoomPosition(position.x, position.y, room.name))
-                .sort(position => this.sortByClosestToSpawn(position, spawns[0]));
+                .sort(position => this.getPathLength(position, spawns[0].pos));
 
             if (validContainerSitePositions.length > 0) {
                 const location = { x: validContainerSitePositions[0].x, y: validContainerSitePositions[0].y } as Coordinate;
-                const request = { structType: STRUCTURE_CONTAINER, location, priority: BuildQueue.buildPriorities.get(STRUCTURE_CONTAINER) } as BuildQueueRequest;
-                // Currently only checks if one container is built
+                const request = { structType: STRUCTURE_CONTAINER, location, priority: BuildQueue.getBuildPriority(STRUCTURE_CONTAINER) } as BuildQueueRequest;
+
+                // Currently hasPlacedContainerSites is set to true even if only one of these makes it into the build queue
                 if (BuildQueue.addToBuildQueue(room, request)) {
                     room.memory.hasPlacedContainerSites = true;
                 }
@@ -53,22 +40,23 @@ export class AutoBaseBuilding {
 
         let isValidPosition = true;
         positionObjects.forEach(object => {
-            // Filter out walls
+            // Filter out wall terrain
             if (object.type === LOOK_TERRAIN && object.terrain === "wall") {
                 isValidPosition = false;
             }
 
-            // Filter out structures that aren't roads
-            if (object.type === LOOK_STRUCTURES && object.structure && object.structure.structureType !== STRUCTURE_ROAD) {
+            // Filter out structures that aren't roads or ramparts
+            if (object.type === LOOK_STRUCTURES && object.structure && object.structure.structureType !== STRUCTURE_ROAD && object.structure.structureType !== STRUCTURE_RAMPART) {
                 isValidPosition = false;
             }
 
-            // Filter out construction sites that aren't roads
+            // Filter out construction sites that aren't roads or ramparts
             if (
                 object.type === LOOK_CONSTRUCTION_SITES &&
                 object.constructionSite &&
                 object.constructionSite.structureType !== STRUCTURE_ROAD &&
-                object.constructionSite.structureType !== STRUCTURE_CONTAINER
+                object.constructionSite.structureType !== STRUCTURE_CONTAINER &&
+                object.constructionSite.structureType !== STRUCTURE_RAMPART
             ) {
                 isValidPosition = false;
             }
@@ -77,22 +65,33 @@ export class AutoBaseBuilding {
         return isValidPosition;
     }
 
-    private static sortByClosestToSpawn(pos: RoomPosition, spawn: StructureSpawn) {
-        const path = pos.findPathTo(spawn);
+    private static getPathLength(source: RoomPosition, dest: RoomPosition) {
+        const path = source.findPathTo(dest);
         return path.length;
     }
 
     public static placeRoads(room: Room) {
-
-        let structLocations = room.find(FIND_STRUCTURES, {
-            filter: { structureType: STRUCTURE_ROAD }
+        // Don't place roads if there is a structure (except ramparts)
+        const structLocations = room.find(FIND_STRUCTURES, {
+            filter: s => s.structureType !== STRUCTURE_RAMPART
         }).map(s => [s.pos.x, s.pos.y]);
 
+        // Don't place roads if there is currently a construction site
+        room.find(FIND_CONSTRUCTION_SITES).map(s => [s.pos.x, s.pos.y]).forEach(t => {
+            if (!this.locationIn(structLocations, t)) {
+                structLocations.push(t);
+            }
+        });
 
-        room.find(FIND_CONSTRUCTION_SITES).map(s => [s.pos.x, s.pos.y]).forEach(t =>
-            structLocations.push(t)
-        );
+        // Don't place roads if there is a build queue entry
+        room.memory.buildQueue = room.memory.buildQueue || [] as BuildQueueRequest[];
+        room.memory.buildQueue.map(req => [req.location.x, req.location.y]).forEach(t => {
+            if (!this.locationIn(structLocations, t)) {
+                structLocations.push(t);
+            }
+        });
 
+        // Get max number of traversals
         let spotsForRoads = [];
         let max = 0;
         for (let i = 0; i < 50; i++) {
@@ -100,13 +99,14 @@ export class AutoBaseBuilding {
                 max = room.memory.locationUtilization[i][j] > max ? room.memory.locationUtilization[i][j] : max;
             }
         }
-
         console.log("max traversal: " + max);
+
+        // If a location accounts for more than 1% of all travel, place a road
         for (let i = 0; i < 50; i++) {
             for (let j = 0; j < 50; j++) {
                 const position = [i, j];
                 if (!this.locationIn(structLocations, position)) {
-                    let c = room.memory.locationUtilization[i][j];
+                    const c = room.memory.locationUtilization[i][j];
                     if (c / max > .01) {
                         spotsForRoads.push({ x: i, y: j, count: c });
                     }
@@ -114,31 +114,37 @@ export class AutoBaseBuilding {
             }
         }
 
+        // Sort by traversal count
         spotsForRoads = spotsForRoads.sort((a, b) => b.count - a.count);
-
         console.log(JSON.stringify(spotsForRoads));
 
-
-        const maxStructuresPerCycle = 10;
+        const maxStructuresPerCycle = 100;
         let addedStructureCount = 0;
-
 
         spotsForRoads.forEach(
             spot => {
                 if (addedStructureCount < maxStructuresPerCycle) {
-                    room.createConstructionSite(spot.x, spot.y, STRUCTURE_ROAD);
+                    // Add road to the build queue
+                    const location = new RoomPosition(spot.x, spot.y, room.name);
+                    const priority = BuildQueue.getBuildPriority(STRUCTURE_ROAD) + addedStructureCount;
+                    const request = { structType: STRUCTURE_ROAD, location, priority } as BuildQueueRequest;
+                    const result = BuildQueue.addToBuildQueue(room, request);
+                    console.log("Adding " + JSON.stringify(request) + " to build queue was " + result ? "sucessfull" : "unsucessfull");
                     addedStructureCount++;
                     console.log("adding roads");
                 }
             }
         )
-
-
     }
 
     private static locationIn(list: number[][], value: number[]) {
         let output = false;
-        list.forEach(pair => { if (pair[0] == value[0] && pair[1] == value[1]) { output = true } });
+        for (const pair of list) {
+            if (pair[0] === value[0] && pair[1] === value[1]) {
+                output = true;
+                break;
+            }
+        }
         return output;
     }
 }
