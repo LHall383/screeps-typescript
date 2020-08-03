@@ -1,4 +1,6 @@
-export class AutoBuilding {
+import { BuildQueue } from "./build_queue";
+
+export class AutoBaseBuilding {
     public static placeContainers(room: Room) {
         // This could probably be improved, we never check if containers get built correctly or anything
         if (room.memory.hasPlacedContainerSites) {
@@ -36,8 +38,12 @@ export class AutoBuilding {
                 .sort(position => this.sortByClosestToSpawn(position, spawns[0]));
 
             if (validContainerSitePositions.length > 0) {
-                validContainerSitePositions[0].createConstructionSite(STRUCTURE_CONTAINER);
-                room.memory.hasPlacedContainerSites = true;
+                const location = { x: validContainerSitePositions[0].x, y: validContainerSitePositions[0].y } as Coordinate;
+                const request = { structType: STRUCTURE_CONTAINER, location, priority: BuildQueue.buildPriorities.get(STRUCTURE_CONTAINER) } as BuildQueueRequest;
+                // Currently only checks if one container is built
+                if (BuildQueue.addToBuildQueue(room, request)) {
+                    room.memory.hasPlacedContainerSites = true;
+                }
             }
         });
     }

@@ -2,7 +2,6 @@ import { RoleName } from "enums/RoleName";
 import { RoleHelpers } from "roles/helpers";
 import { Tasks } from "../../creep-tasks/Tasks";
 import { Role } from "../Role";
-import { RoleBuilder } from "./builder";
 
 export class RoleHarvester extends Role {
     public static roleName: string = RoleName.Harvester;

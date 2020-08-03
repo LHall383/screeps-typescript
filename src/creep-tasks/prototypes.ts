@@ -1,8 +1,7 @@
-// This binds a getter/setter creep.task property
-
 import { TargetCache } from './utilities/caching';
 import { initializeTask } from './utilities/initializer';
 
+// This binds a getter/setter creep.task property
 Object.defineProperty(Creep.prototype, 'task', {
 	get() {
 		if (!this._task) {
@@ -47,6 +46,7 @@ Creep.prototype.run = function (): number | void {
 	}
 };
 
+// tslint:disable-next-line: only-arrow-functions no-empty
 Creep.prototype.universals = function (): void {
 
 };

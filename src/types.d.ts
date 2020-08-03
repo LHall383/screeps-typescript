@@ -1,4 +1,14 @@
 // example declaration file - remove these and add your own custom typings
+type Coordinate = {
+    x: number;
+    y: number;
+}
+
+type BuildQueueRequest = {
+    structType: BuildableStructureConstant;
+    location: Coordinate;
+    priority: number;
+};
 
 // memory extension samples
 interface CreepMemory {
@@ -8,15 +18,19 @@ interface CreepMemory {
 }
 
 interface RoomMemory {
+    // base planning
+    basePlan: { corner: Coordinate; center: Coordinate; };
+    buildQueue: BuildQueueRequest[];
+    hasPlacedContainerSites: boolean;
+
+    // creep spawning
     creepRoleCounts: {
         data: { [role: string]: number };
         tick: number;
     };
-
-    hasPlacedContainerSites: boolean;
-
     spawnQueue: { memory: CreepMemory; body: BodyPartConstant[] }[];
 
+    // statistics
     locationUtilization: number[][];
 }
 

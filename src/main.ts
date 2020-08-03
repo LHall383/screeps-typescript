@@ -1,4 +1,6 @@
-import { AutoBuilding } from "autobuilding/auto_base_building";
+import { AutoBaseBuilding } from "autobuilding/auto_base_building";
+import { AutoBasePlanning } from "autobuilding/auto_base_planning";
+import { BuildQueue } from "autobuilding/build_queue";
 import { AutoSpawn } from "autospawn/auto_spawn";
 import "creep-tasks/prototypes";
 import { RoleName } from "enums/RoleName";
@@ -17,7 +19,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
         }
     }
 
-    // Look through all rooms with a spawn and queue spawns, then perform spawns
+    // Look through all rooms
     for (const roomName in Game.rooms) {
         const room = Game.rooms[roomName];
         if (!room.memory.locationUtilization) {
@@ -31,17 +33,26 @@ export const loop = ErrorMapper.wrapLoop(() => {
             }
         }
 
+        // If we own a spawn, perform autospawning
         const spawns = room.find(FIND_MY_SPAWNS);
         if (spawns.length > 0) {
             AutoSpawn.queueSpawns(room);
             AutoSpawn.spawnFromQueue(room);
         }
 
-        if (Game.time % 1000 === 0) {
-            AutoBuilding.placeRoads(room);
+        // If we own this room, then perform base planning
+        if (room.controller && room.controller.my) {
+            AutoBasePlanning.planCoreLayout(room);
         }
 
-        AutoBuilding.placeContainers(room);
+        AutoBaseBuilding.placeContainers(room);
+        BuildQueue.buildFromQueue(room);
+
+        if (Game.time % 1000 === 0) {
+            AutoBaseBuilding.placeRoads(room);
+        }
+
+        AutoBaseBuilding.placeContainers(room);
     }
 
     // Search through all the creeps in the game, and perform actions
