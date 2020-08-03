@@ -18,20 +18,20 @@ interface CreepMemory {
 }
 
 interface RoomMemory {
-    basePlan: {
-        corner: Coordinate;
-        center: Coordinate;
-    };
+    // base planning
+    basePlan: { corner: Coordinate; center: Coordinate; };
     buildQueue: BuildQueueRequest[];
+    hasPlacedContainerSites: boolean;
+
+    // creep spawning
     creepRoleCounts: {
         data: { [role: string]: number };
         tick: number;
     };
-    hasPlacedContainerSites: boolean;
-    spawnQueue: {
-        memory: CreepMemory;
-        body: BodyPartConstant[];
-    }[];
+    spawnQueue: { memory: CreepMemory; body: BodyPartConstant[] }[];
+
+    // statistics
+    locationUtilization: number[][];
 }
 
 interface Memory {

@@ -1,8 +1,7 @@
-// This binds a getter/setter creep.task property
-
-import { initializeTask } from './utilities/initializer';
 import { TargetCache } from './utilities/caching';
+import { initializeTask } from './utilities/initializer';
 
+// This binds a getter/setter creep.task property
 Object.defineProperty(Creep.prototype, 'task', {
 	get() {
 		if (!this._task) {
@@ -41,9 +40,19 @@ Object.defineProperty(Creep.prototype, 'task', {
 });
 
 Creep.prototype.run = function (): number | void {
+	this.universals();
 	if (this.task) {
 		return this.task.run();
 	}
+};
+
+// tslint:disable-next-line: only-arrow-functions no-empty
+Creep.prototype.universals = function (): void {
+
+};
+
+Creep.prototype.tellRoomPosition = function (): void {
+	this.room.memory.locationUtilization[this.pos.x][this.pos.y] += 1;
 };
 
 Object.defineProperties(Creep.prototype, {
@@ -62,13 +71,13 @@ Object.defineProperties(Creep.prototype, {
 // RoomObject prototypes ===============================================================================================
 
 Object.defineProperty(RoomObject.prototype, 'ref', {
-	get: function () {
+	get() {
 		return this.id || this.name || '';
 	},
 });
 
 Object.defineProperty(RoomObject.prototype, 'targetedBy', {
-	get: function () {
+	get() {
 		// Check that target cache has been initialized - you can move this to execute once per tick if you want
 		TargetCache.assert();
 		return _.map(Game.TargetCache.targets[this.ref], name => Game.creeps[name]);
@@ -78,19 +87,19 @@ Object.defineProperty(RoomObject.prototype, 'targetedBy', {
 // RoomPosition prototypes =============================================================================================
 
 Object.defineProperty(RoomPosition.prototype, 'isEdge', { // if the position is at the edge of a room
-	get: function () {
-		return this.x == 0 || this.x == 49 || this.y == 0 || this.y == 49;
+	get() {
+		return this.x === 0 || this.x === 49 || this.y === 0 || this.y === 49;
 	},
 });
 
 Object.defineProperty(RoomPosition.prototype, 'neighbors', {
-	get: function () {
-		let adjPos: RoomPosition[] = [];
-		for (let dx of [-1, 0, 1]) {
-			for (let dy of [-1, 0, 1]) {
-				if (!(dx == 0 && dy == 0)) {
-					let x = this.x + dx;
-					let y = this.y + dy;
+	get() {
+		const adjPos: RoomPosition[] = [];
+		for (const dx of [-1, 0, 1]) {
+			for (const dy of [-1, 0, 1]) {
+				if (!(dx === 0 && dy === 0)) {
+					const x = this.x + dx;
+					const y = this.y + dy;
 					if (0 < x && x < 49 && 0 < y && y < 49) {
 						adjPos.push(new RoomPosition(x, y, this.roomName));
 					}
@@ -102,25 +111,26 @@ Object.defineProperty(RoomPosition.prototype, 'neighbors', {
 });
 
 Object.defineProperty(RoomPosition.prototype, 'isVisible', {
-	get: function () {
+	get() {
 		return false;
 	}
 });
 
 RoomPosition.prototype.isPassible = function (ignoreCreeps = false): boolean {
 	// Is terrain passable?
-	if (Game.map.getTerrainAt(this) == 'wall') return false;
+	const terrain = Game.map.getRoomTerrain(this.roomName);
+	if (terrain.get(this.x, this.y) === TERRAIN_MASK_WALL) { return false; }
 	if (this.isVisible) {
 		// Are there creeps?
-		if (ignoreCreeps == false && this.lookFor(LOOK_CREEPS).length > 0) return false;
+		if (ignoreCreeps === false && this.lookFor(LOOK_CREEPS).length > 0) { return false; }
 		// Are there structures?
-		let impassibleStructures = _.filter(this.lookFor(LOOK_STRUCTURES), function (s: Structure) {
-			return s.structureType != STRUCTURE_ROAD &&
-				s.structureType != STRUCTURE_CONTAINER &&
-				!(s.structureType == STRUCTURE_RAMPART && ((<StructureRampart>s).my ||
-					(<StructureRampart>s).isPublic));
+		const impassibleStructures = _.filter(this.lookFor(LOOK_STRUCTURES), s => {
+			return s.structureType !== STRUCTURE_ROAD &&
+				s.structureType !== STRUCTURE_CONTAINER &&
+				!(s.structureType === STRUCTURE_RAMPART && ((s as StructureRampart).my ||
+					(s as StructureRampart).isPublic));
 		});
-		return impassibleStructures.length == 0;
+		return impassibleStructures.length === 0;
 	}
 	return true;
 };
