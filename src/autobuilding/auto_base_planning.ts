@@ -142,9 +142,9 @@ export class AutoBasePlanning {
         // add core layout to build queue
         for (let x = 0; x < layoutWidth; x++) {
             for (let y = 0; y < layoutHeight; y++) {
-                const structType = this.coreLayout[x][y];
+                const structType = this.coreLayout[y][x];
                 const location = { x: best.corner.x + x, y: best.corner.y + y } as Coordinate;
-                const priority = BuildQueue.getBuildPriority(structType) + this.corePriorityIncrease[x][y];
+                const priority = BuildQueue.getBuildPriority(structType) + this.corePriorityIncrease[y][x];
                 const request = { structType, location, priority } as BuildQueueRequest;
                 BuildQueue.addToBuildQueue(room, request);
             }

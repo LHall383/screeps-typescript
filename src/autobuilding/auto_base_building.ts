@@ -94,20 +94,27 @@ export class AutoBaseBuilding {
         // Get max number of traversals
         let spotsForRoads = [];
         let max = 0;
+        let sum = 0;
         for (let i = 0; i < 50; i++) {
             for (let j = 0; j < 50; j++) {
                 max = room.memory.locationUtilization[i][j] > max ? room.memory.locationUtilization[i][j] : max;
+                sum += room.memory.locationUtilization[i][j];
             }
         }
         console.log("max traversal: " + max);
 
-        // If a location accounts for more than 1% of all travel, place a road
+        // If the maximum is not at least 100, just exit
+        if (max < 25) {
+            return;
+        }
+
+        // If a location accounts for more than 2% of all travel (not on roads), place a road
         for (let i = 0; i < 50; i++) {
             for (let j = 0; j < 50; j++) {
                 const position = [i, j];
                 if (!this.locationIn(structLocations, position)) {
                     const c = room.memory.locationUtilization[i][j];
-                    if (c / max > .01) {
+                    if ((c / sum) > .02) {
                         spotsForRoads.push({ x: i, y: j, count: c });
                     }
                 }
@@ -129,7 +136,7 @@ export class AutoBaseBuilding {
                     const priority = BuildQueue.getBuildPriority(STRUCTURE_ROAD) + addedStructureCount;
                     const request = { structType: STRUCTURE_ROAD, location, priority } as BuildQueueRequest;
                     const result = BuildQueue.addToBuildQueue(room, request);
-                    console.log("Adding " + JSON.stringify(request) + " to build queue was " + result ? "sucessfull" : "unsucessfull");
+                    console.log("Adding " + JSON.stringify(request) + " to build queue was " + (result ? "sucessfull" : "unsucessfull"));
                     addedStructureCount++;
                     console.log("adding roads");
                 }

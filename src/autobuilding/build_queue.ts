@@ -85,6 +85,19 @@ export class BuildQueue {
         return true;
     }
 
+    // Remove the specified item from the build queue
+    private static removeFromQueue(room: Room, request: BuildQueueRequest) {
+        room.memory.buildQueue = room.memory.buildQueue || [] as BuildQueueRequest[];
+
+        _.remove(room.memory.buildQueue, req => {
+            return req.location.x === request.location.x
+                && req.location.y === request.location.y
+                && req.structType === request.structType
+                && req.priority === request.priority;
+        });
+    }
+
+    // Build the highest priority item from the queue if possible
     public static buildFromQueue(room: Room) {
         room.memory.buildQueue = room.memory.buildQueue || [] as BuildQueueRequest[];
 
@@ -106,10 +119,38 @@ export class BuildQueue {
 
             const response = buildPosition.createConstructionSite(request.structType);
             if (response === OK) {
+                // remove the item from the build queue
+                this.removeFromQueue(room, request);
                 return;
             } else {
                 continue;
             }
         }
+    }
+
+    public static visualizeBuildQueue(room: Room) {
+        room.memory.buildQueue = room.memory.buildQueue || [] as BuildQueueRequest[];
+
+        // loop through queue
+        room.memory.buildQueue.forEach(request => {
+            // draw a shape for each type of structure
+            switch (request.structType) {
+                case STRUCTURE_SPAWN:
+                    room.visual.circle(request.location.x, request.location.y, { fill: 'green' });
+                    break;
+                case STRUCTURE_ROAD:
+                    room.visual.circle(request.location.x, request.location.y, { fill: '#CCCCCC', radius: 0.1 });
+                    break;
+                case STRUCTURE_EXTENSION:
+                    room.visual.circle(request.location.x, request.location.y, { fill: '#8FEB34' });
+                    break;
+                case STRUCTURE_TOWER:
+                    room.visual.rect(request.location.x - .25, request.location.y - .25, .5, .5, { fill: 'red' });
+                    break;
+                default:
+                    room.visual.circle(request.location.x, request.location.y, { fill: 'black' });
+                    break;
+            }
+        });
     }
 }

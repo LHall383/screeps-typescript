@@ -41,15 +41,15 @@ export const loop = ErrorMapper.wrapLoop(() => {
         }
 
         // If we own this room, then perform base planning
-        if (room.controller && room.controller.my) {
+        if (room.controller && room.controller.my && Game.time % 10 === 0) {
             AutoBasePlanning.planCoreLayout(room);
             AutoBaseBuilding.placeContainers(room);
-
-            if (Game.time % 10 === 0) {
-                AutoBaseBuilding.placeRoads(room);
-            }
+            AutoBaseBuilding.placeRoads(room);
         }
+
+        // Build from the queue for all rooms we can see
         BuildQueue.buildFromQueue(room);
+        BuildQueue.visualizeBuildQueue(room);
     }
 
     // Search through all the creeps in the game, and perform actions
