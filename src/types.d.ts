@@ -19,7 +19,7 @@ interface CreepMemory {
 
 interface RoomMemory {
     // base planning
-    basePlan: { corner: Coordinate; center: Coordinate; labCorner: Coordinate; };
+    basePlan: { corner: Coordinate; center: Coordinate; labCorner: Coordinate; hasPlannedExtensions: boolean; };
     buildQueue: BuildQueueRequest[];
     hasPlacedContainerSites: boolean;
 

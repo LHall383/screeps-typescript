@@ -44,6 +44,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
         if (room.controller && room.controller.my && Game.time % 10 === 0) {
             AutoBasePlanning.planCoreLayout(room);
             AutoBasePlanning.planLabLayout(room);
+            AutoBasePlanning.planExtensions(room);
             AutoBaseBuilding.placeContainers(room);
             AutoBaseBuilding.placeRoads(room);
         }

@@ -46,14 +46,16 @@ export class AutoBasePlanning {
 
         for (let checkX = checkPos.x; checkX < checkPos.x + layoutWidth; checkX++) {
             for (let checkY = checkPos.y; checkY < checkPos.y + layoutHeight; checkY++) {
+                const pos = checkRoom.getPositionAt(checkX, checkY) || new RoomPosition(checkX, checkY, checkRoom.name);
+
                 // Can't build on walls
                 if (terrain.get(checkX, checkY) === TERRAIN_MASK_WALL) {
                     return false;
                 }
 
                 // Don't want to build directly next to a source
-                if ((sources[0] && checkPos.isNearTo(sources[0]))
-                    || (sources[1] && checkPos.isNearTo(sources[1]))) {
+                if ((sources[0] && pos.isNearTo(sources[0]))
+                    || (sources[1] && pos.isNearTo(sources[1]))) {
                     return false;
                 }
 
@@ -103,7 +105,7 @@ export class AutoBasePlanning {
     /* Plan the fixed core layout of the room and add to build queue */
     public static planCoreLayout(room: Room) {
         // check if this room has already been planned for, if so, exit early
-        room.memory.basePlan = room.memory.basePlan || {} as { corner: Coordinate; center: Coordinate; labCorner: Coordinate; };
+        room.memory.basePlan = room.memory.basePlan || { hasPlannedExtensions: false } as { corner: Coordinate; center: Coordinate; labCorner: Coordinate; hasPlannedExtensions: boolean; };
         if (room.memory.basePlan.center) {
             return;
         }
@@ -159,7 +161,7 @@ export class AutoBasePlanning {
     }
 
     /* Calculate a fitness score for a lab setup centered at the provided position, lower score is better */
-    private static calcLabFitness(room: Room, center: RoomPosition): number {
+    private static calcLabFitness(room: Room, center: RoomPosition, terminalPos: RoomPosition | undefined): number {
         let score = 0;
 
         // Prefer locations that are further from exits
@@ -170,14 +172,7 @@ export class AutoBasePlanning {
         }
 
         // Prefer locations that are closer to the terminal
-        const terminalReq = BuildQueue.getEntriesOfType(room, STRUCTURE_TERMINAL);
-        if (room.terminal) {
-            const pathToTerminal = center.findPathTo(room.terminal.pos);
-            const pathBelowTerminal = center.findPathTo(new RoomPosition(room.terminal.pos.x, room.terminal.pos.y + 1, room.name));
-            score = score += pathToTerminal.length;
-            score = score += pathBelowTerminal.length;
-        } else if (terminalReq.length > 0) {
-            const terminalPos = room.getPositionAt(terminalReq[0].location.x, terminalReq[0].location.y) || new RoomPosition(terminalReq[0].location.x, terminalReq[0].location.y, room.name);
+        if (terminalPos) {
             const pathToTerminal = center.findPathTo(terminalPos);
             const pathBelowTerminal = center.findPathTo(new RoomPosition(terminalPos.x, terminalPos.y + 1, room.name));
             score = score += pathToTerminal.length;
@@ -190,7 +185,7 @@ export class AutoBasePlanning {
     /* Find a place for the fixed lab layout and enter into build queue */
     public static planLabLayout(room: Room) {
         // check if this room has already been planned for, if so, exit early
-        room.memory.basePlan = room.memory.basePlan || {} as { corner: Coordinate; center: Coordinate; labCorner: Coordinate; };
+        room.memory.basePlan = room.memory.basePlan || { hasPlannedExtensions: false } as { corner: Coordinate; center: Coordinate; labCorner: Coordinate; hasPlannedExtensions: boolean; };
         if (room.memory.basePlan.labCorner) {
             return;
         }
@@ -215,6 +210,16 @@ export class AutoBasePlanning {
         if (!best) {
             // search through every possible location in the room
             const possibleLocations = [] as Array<{ corner: Coordinate; center: Coordinate; score: number }>;
+
+            // find the terminal for this room
+            let terminalPos;
+            const terminalReq = BuildQueue.getEntriesOfType(room, STRUCTURE_TERMINAL);
+            if (room.terminal) {
+                terminalPos = room.terminal.pos;
+            } else if (terminalReq.length > 0) {
+                terminalPos = room.getPositionAt(terminalReq[0].location.x, terminalReq[0].location.y) || new RoomPosition(terminalReq[0].location.x, terminalReq[0].location.y, room.name);
+            }
+
             for (let x = 1; x < 49 - layoutWidth; x++) {
                 for (let y = 1; y < 49 - layoutHeight; y++) {
                     // get associated room position object
@@ -228,7 +233,7 @@ export class AutoBasePlanning {
                         const centerX = Math.floor(x + layoutWidth / 2);
                         const centerY = Math.floor(y + layoutHeight / 2);
                         const baseCenter = room.getPositionAt(centerX, centerY) || new RoomPosition(centerX, centerY, room.name);
-                        const score = this.calcLabFitness(room, baseCenter);
+                        const score = this.calcLabFitness(room, baseCenter, terminalPos);
 
                         possibleLocations.push({
                             corner: { x, y },
@@ -257,6 +262,73 @@ export class AutoBasePlanning {
                 BuildQueue.addToBuildQueue(room, request);
             }
         }
+    }
+
+    /* Plan extension placement for the base */
+    public static planExtensions(room: Room) {
+        // check if a base plan exists, exit if not
+        room.memory.basePlan = room.memory.basePlan || { hasPlannedExtensions: false } as { corner: Coordinate; center: Coordinate; labCorner: Coordinate; hasPlannedExtensions: boolean; };
+        if (!room.memory.basePlan.center) {
+            return;
+        }
+        const center = room.getPositionAt(room.memory.basePlan.center.x, room.memory.basePlan.center.y) || new RoomPosition(room.memory.basePlan.center.x, room.memory.basePlan.center.y, room.name);
+
+        // check if extensions have been planned, if so, exit
+        if (room.memory.basePlan.hasPlannedExtensions) {
+            return;
+        }
+
+        // Get terrain map
+        const terrain = room.getTerrain();
+
+        // Locate sources
+        const sources = room.find(FIND_SOURCES);
+
+        // find all possible locations for extensions, and give them each a score, then order by score
+        const possibleExtensions = [];
+        for (let y = room.memory.basePlan.center.y % 2; y < 49; y++) {
+            for (let x = (room.memory.basePlan.center.x % 2) + (1 - (y % 2)); x < 49; x += 2) {
+                // Can't build on walls
+                if (terrain.get(x, y) === TERRAIN_MASK_WALL) {
+                    continue;
+                }
+
+                // Don't want to build too close to a source
+                if ((sources[0] && sources[0].pos.inRangeTo(x, y, 3))
+                    || (sources[1] && sources[1].pos.inRangeTo(x, y, 3))) {
+                    continue;
+                }
+
+                // Don't want to build too close to the controller
+                if (room.controller && room.controller.pos.inRangeTo(x, y, 3)) {
+                    continue;
+                }
+
+                // Don't plan this if there are build queue entries at this location
+                const entries = BuildQueue.getEntriesAtLocation(room, x, y);
+                if (entries.length > 0) {
+                    continue;
+                }
+
+                // If location is not obstructed, calculate a score for this location
+                let dist = 0;
+                if (sources.length > 0) { dist += sources[0].pos.findPathTo(x, y, { plainCost: 1, swampCost: 1, ignoreCreeps: true }).length; }
+                if (sources.length > 1) { dist += sources[1].pos.findPathTo(x, y, { plainCost: 1, swampCost: 1, ignoreCreeps: true }).length; }
+                dist *= .35;
+                dist += center.findPathTo(x, y, { plainCost: 1, swampCost: 1, ignoreCreeps: true }).length;
+                possibleExtensions.push({ x, y, score: dist });
+            }
+        }
+        possibleExtensions.sort((a, b) => a.score - b.score);
+
+        // push those with the highest scores to the build queue
+        for (let i = 0; i < possibleExtensions.length && i < 59; i++) {
+            const location = { x: possibleExtensions[i].x, y: possibleExtensions[i].y } as Coordinate;
+            const request = { structType: STRUCTURE_EXTENSION, priority: BuildQueue.getBuildPriority(STRUCTURE_EXTENSION) + i, location } as BuildQueueRequest;
+            BuildQueue.addToBuildQueue(room, request);
+        }
+
+        room.memory.basePlan.hasPlannedExtensions = true;
     }
 
 }
