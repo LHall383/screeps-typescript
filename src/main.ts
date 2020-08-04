@@ -43,6 +43,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
         // If we own this room, then perform base planning
         if (room.controller && room.controller.my && Game.time % 10 === 0) {
             AutoBasePlanning.planCoreLayout(room);
+            AutoBasePlanning.planLabLayout(room);
             AutoBaseBuilding.placeContainers(room);
             AutoBaseBuilding.placeRoads(room);
         }

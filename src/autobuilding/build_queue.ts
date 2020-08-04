@@ -59,6 +59,24 @@ export class BuildQueue {
         }
     };
 
+    /* Retreive instance of build queue, init if neccessary */
+    public static getBuildQueue(room: Room): BuildQueueRequest[] {
+        room.memory.buildQueue = room.memory.buildQueue || [] as BuildQueueRequest[];
+        return room.memory.buildQueue;
+    }
+
+    /* Retreive the entries matching a specific structure type */
+    public static getEntriesOfType(room: Room, structType: BuildableStructureConstant): BuildQueueRequest[] {
+        const buildQueue = this.getBuildQueue(room);
+        return _.filter(buildQueue, req => req.structType === structType);
+    }
+
+    /* Retreive the entries at a specific location */
+    public static getEntriesAtLocation(room: Room, x: number, y: number): BuildQueueRequest[] {
+        const buildQueue = this.getBuildQueue(room);
+        return _.filter(buildQueue, req => req.location.x === x && req.location.y === y);
+    }
+
     // Add a request to build queue if valid, lower priority number is higher priority
     public static addToBuildQueue(room: Room, request: BuildQueueRequest): boolean {
         room.memory.buildQueue = room.memory.buildQueue || [] as BuildQueueRequest[];
@@ -142,10 +160,13 @@ export class BuildQueue {
                     room.visual.circle(request.location.x, request.location.y, { fill: '#CCCCCC', radius: 0.1 });
                     break;
                 case STRUCTURE_EXTENSION:
-                    room.visual.circle(request.location.x, request.location.y, { fill: '#8FEB34' });
+                    room.visual.circle(request.location.x, request.location.y, { fill: '#C8D44C' });
                     break;
                 case STRUCTURE_TOWER:
                     room.visual.rect(request.location.x - .25, request.location.y - .25, .5, .5, { fill: 'red' });
+                    break;
+                case STRUCTURE_LAB:
+                    room.visual.circle(request.location.x, request.location.y, { fill: '#2F7AA8' });
                     break;
                 default:
                     room.visual.circle(request.location.x, request.location.y, { fill: 'black' });

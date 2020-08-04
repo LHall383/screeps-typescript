@@ -3,7 +3,7 @@ import { BuildQueue } from "./build_queue";
 export class AutoBaseBuilding {
     public static placeContainers(room: Room) {
         // TODO: This could probably be improved, we never check if containers get built correctly or anything
-        if (room.memory.hasPlacedContainerSites) {
+        if (room.memory.hasPlacedContainerSites || !room.controller || !room.controller.my || room.controller.level < 2) {
             return;
         }
 
@@ -84,8 +84,8 @@ export class AutoBaseBuilding {
         });
 
         // Don't place roads if there is a build queue entry
-        room.memory.buildQueue = room.memory.buildQueue || [] as BuildQueueRequest[];
-        room.memory.buildQueue.map(req => [req.location.x, req.location.y]).forEach(t => {
+        const buildQueue = BuildQueue.getBuildQueue(room);
+        buildQueue.map(req => [req.location.x, req.location.y]).forEach(t => {
             if (!this.locationIn(structLocations, t)) {
                 structLocations.push(t);
             }
@@ -93,28 +93,24 @@ export class AutoBaseBuilding {
 
         // Get max number of traversals
         let spotsForRoads = [];
-        let max = 0;
         let sum = 0;
         for (let i = 0; i < 50; i++) {
             for (let j = 0; j < 50; j++) {
-                max = room.memory.locationUtilization[i][j] > max ? room.memory.locationUtilization[i][j] : max;
                 sum += room.memory.locationUtilization[i][j];
             }
         }
-        console.log("max traversal: " + max);
-
-        // If the maximum is not at least 100, just exit
-        if (max < 25) {
+        console.log("sum of all traversals: " + sum);
+        if (sum < 100) {
             return;
         }
 
-        // If a location accounts for more than 2% of all travel (not on roads), place a road
+        // If a location accounts for more than 1.5% of all travel, place a road
         for (let i = 0; i < 50; i++) {
             for (let j = 0; j < 50; j++) {
                 const position = [i, j];
                 if (!this.locationIn(structLocations, position)) {
                     const c = room.memory.locationUtilization[i][j];
-                    if ((c / sum) > .02) {
+                    if ((c / sum) > .015) {
                         spotsForRoads.push({ x: i, y: j, count: c });
                     }
                 }

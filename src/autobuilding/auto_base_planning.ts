@@ -1,4 +1,5 @@
 import { BuildQueue } from "./build_queue";
+import { CANCELLED } from "dns";
 
 export class AutoBasePlanning {
     public static coreLayout = [
@@ -25,7 +26,6 @@ export class AutoBasePlanning {
         [STRUCTURE_ROAD, STRUCTURE_LAB, STRUCTURE_ROAD, STRUCTURE_LAB, STRUCTURE_ROAD],
         [STRUCTURE_LAB, STRUCTURE_ROAD, STRUCTURE_LAB, STRUCTURE_ROAD, STRUCTURE_LAB],
         [STRUCTURE_LAB, STRUCTURE_ROAD, STRUCTURE_LAB, STRUCTURE_ROAD, STRUCTURE_LAB],
-        [STRUCTURE_LAB, STRUCTURE_ROAD, STRUCTURE_LAB, STRUCTURE_ROAD, STRUCTURE_LAB],
         [STRUCTURE_ROAD, STRUCTURE_LAB, STRUCTURE_ROAD, STRUCTURE_LAB, STRUCTURE_ROAD],
     ] as BuildableStructureConstant[][];
 
@@ -50,9 +50,16 @@ export class AutoBasePlanning {
                 if (terrain.get(checkX, checkY) === TERRAIN_MASK_WALL) {
                     return false;
                 }
+
                 // Don't want to build directly next to a source
                 if ((sources[0] && checkPos.isNearTo(sources[0]))
                     || (sources[1] && checkPos.isNearTo(sources[1]))) {
+                    return false;
+                }
+
+                // Don't plan this if there are build queue entries at this location
+                const entries = BuildQueue.getEntriesAtLocation(checkRoom, checkX, checkY);
+                if (entries.length > 0) {
                     return false;
                 }
             }
@@ -96,7 +103,7 @@ export class AutoBasePlanning {
     /* Plan the fixed core layout of the room and add to build queue */
     public static planCoreLayout(room: Room) {
         // check if this room has already been planned for, if so, exit early
-        room.memory.basePlan = room.memory.basePlan || {} as { corner: Coordinate; center: Coordinate; };
+        room.memory.basePlan = room.memory.basePlan || {} as { corner: Coordinate; center: Coordinate; labCorner: Coordinate; };
         if (room.memory.basePlan.center) {
             return;
         }
@@ -145,6 +152,107 @@ export class AutoBasePlanning {
                 const structType = this.coreLayout[y][x];
                 const location = { x: best.corner.x + x, y: best.corner.y + y } as Coordinate;
                 const priority = BuildQueue.getBuildPriority(structType) + this.corePriorityIncrease[y][x];
+                const request = { structType, location, priority } as BuildQueueRequest;
+                BuildQueue.addToBuildQueue(room, request);
+            }
+        }
+    }
+
+    /* Calculate a fitness score for a lab setup centered at the provided position, lower score is better */
+    private static calcLabFitness(room: Room, center: RoomPosition): number {
+        let score = 0;
+
+        // Prefer locations that are further from exits
+        const closestExit = center.findClosestByRange(FIND_EXIT);
+        if (closestExit) {
+            const rangeFromExit = center.getRangeTo(closestExit);
+            score -= rangeFromExit;
+        }
+
+        // Prefer locations that are closer to the terminal
+        const terminalReq = BuildQueue.getEntriesOfType(room, STRUCTURE_TERMINAL);
+        if (room.terminal) {
+            const pathToTerminal = center.findPathTo(room.terminal.pos);
+            const pathBelowTerminal = center.findPathTo(new RoomPosition(room.terminal.pos.x, room.terminal.pos.y + 1, room.name));
+            score = score += pathToTerminal.length;
+            score = score += pathBelowTerminal.length;
+        } else if (terminalReq.length > 0) {
+            const terminalPos = room.getPositionAt(terminalReq[0].location.x, terminalReq[0].location.y) || new RoomPosition(terminalReq[0].location.x, terminalReq[0].location.y, room.name);
+            const pathToTerminal = center.findPathTo(terminalPos);
+            const pathBelowTerminal = center.findPathTo(new RoomPosition(terminalPos.x, terminalPos.y + 1, room.name));
+            score = score += pathToTerminal.length;
+            score = score += pathBelowTerminal.length;
+        }
+
+        return score;
+    }
+
+    /* Find a place for the fixed lab layout and enter into build queue */
+    public static planLabLayout(room: Room) {
+        // check if this room has already been planned for, if so, exit early
+        room.memory.basePlan = room.memory.basePlan || {} as { corner: Coordinate; center: Coordinate; labCorner: Coordinate; };
+        if (room.memory.basePlan.labCorner) {
+            return;
+        }
+
+        // read some properties from the lab layout
+        const layoutWidth = this.labLayout[0].length;
+        const layoutHeight = this.labLayout.length;
+
+        // if the main layout is placed, check if we can place the labs below, if so, do that
+        let best;
+        if (room.memory.basePlan.corner) {
+            const prefCornerX = room.memory.basePlan.corner.x + 1;
+            const prefCornerY = room.memory.basePlan.corner.y + 7;
+            const prefPos = room.getPositionAt(prefCornerX, prefCornerY) || new RoomPosition(prefCornerX, prefCornerY, room.name);
+
+            const canPlace = this.canPlaceLayout(this.labLayout, layoutWidth, layoutHeight, prefPos, room);
+            if (canPlace) {
+                best = { corner: { x: prefCornerX, y: prefCornerY } };
+            }
+        }
+
+        if (!best) {
+            // search through every possible location in the room
+            const possibleLocations = [] as Array<{ corner: Coordinate; center: Coordinate; score: number }>;
+            for (let x = 1; x < 49 - layoutWidth; x++) {
+                for (let y = 1; y < 49 - layoutHeight; y++) {
+                    // get associated room position object
+                    const pos = room.getPositionAt(x, y) || new RoomPosition(x, y, room.name);
+
+                    // check if layout can be placed
+                    const canPlace = this.canPlaceLayout(this.labLayout, layoutWidth, layoutHeight, pos, room);
+
+                    // get a score for this lab location
+                    if (canPlace) {
+                        const centerX = Math.floor(x + layoutWidth / 2);
+                        const centerY = Math.floor(y + layoutHeight / 2);
+                        const baseCenter = room.getPositionAt(centerX, centerY) || new RoomPosition(centerX, centerY, room.name);
+                        const score = this.calcLabFitness(room, baseCenter);
+
+                        possibleLocations.push({
+                            corner: { x, y },
+                            center: { x: centerX, y: centerY },
+                            score
+                        } as { corner: Coordinate; center: Coordinate, score: number });
+                    }
+                }
+            }
+
+            // pick best lab location
+            const sortedLocations = _.sortBy(possibleLocations, location => location.score)
+            best = sortedLocations[0];
+        }
+
+        // set memory flag
+        room.memory.basePlan.labCorner = best.corner;
+
+        // add lab layout to build queue
+        for (let x = 0; x < layoutWidth; x++) {
+            for (let y = 0; y < layoutHeight; y++) {
+                const structType = this.labLayout[y][x];
+                const location = { x: best.corner.x + x, y: best.corner.y + y } as Coordinate;
+                const priority = BuildQueue.getBuildPriority(structType) + this.labPriorityIncrease[y][x];
                 const request = { structType, location, priority } as BuildQueueRequest;
                 BuildQueue.addToBuildQueue(room, request);
             }

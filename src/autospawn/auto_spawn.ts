@@ -73,6 +73,14 @@ export class AutoSpawn {
                 body: [WORK, CARRY, MOVE]
             });
         }
+
+        // upgraders
+        if (!_.contains(rolesInQueue, RoleName.Upgrader) && (!aliveRoleCounts[RoleName.Upgrader] || aliveRoleCounts[RoleName.Upgrader] < 2)) {
+            this.addToSpawnQueue(room, {
+                memory: { role: RoleName.Upgrader, task: null, working: false, spawnRoom: room.name },
+                body: [WORK, CARRY, MOVE]
+            });
+        }
     }
 
     private static addToSpawnQueue(room: Room, creepSpawnRequest: { memory: CreepMemory; body: BodyPartConstant[] }) {
