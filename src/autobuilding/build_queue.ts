@@ -1,62 +1,30 @@
-import { Dictionary } from "lodash";
-
 export class BuildQueue {
     private static buildPriorities: Record<BuildableStructureConstant, number> = {
-        "spawn": 1,                 // reserve 1-3 for all spawns
-        "extension": 5,             // reserve 5-65 for all extensions
-        "container": 70,            // reserve 70-74 for containers (if order matters)
-        "tower": 80,                // reserve 80-85 for all towers
-        "storage": 90,
-        "terminal": 100,
-        "lab": 110,                 // reserve 110-115 for all labs
-        "link": 120,
-        "road": 130,                // reserve up to 999 for these (helps with planning paths that should be constructed sequentially)
-        "extractor": 1000,
-        "constructedWall": 1010,    // leave up to 1999
-        "rampart": 2000,            // leave up to 2499
-        "observer": 2500,
-        "powerSpawn": 2510,
-        "nuker": 2520,
-        "factory": 2530
+        [STRUCTURE_SPAWN]: 1,                 // reserve 1-3 for all spawns
+        [STRUCTURE_EXTENSION]: 5,             // reserve 5-65 for all extensions
+        [STRUCTURE_CONTAINER]: 70,            // reserve 70-74 for containers (if order matters)
+        [STRUCTURE_TOWER]: 80,                // reserve 80-85 for all towers
+        [STRUCTURE_STORAGE]: 90,
+        [STRUCTURE_TERMINAL]: 100,
+        [STRUCTURE_LAB]: 110,                 // reserve 110-115 for all labs
+        [STRUCTURE_LINK]: 120,
+        [STRUCTURE_ROAD]: 130,                // reserve up to 999 for these (helps with planning paths that should be constructed sequentially)
+        [STRUCTURE_EXTRACTOR]: 1000,
+        [STRUCTURE_WALL]: 1010,               // leave up to 1999
+        [STRUCTURE_RAMPART]: 2000,            // leave up to 2499
+        [STRUCTURE_OBSERVER]: 2500,
+        [STRUCTURE_POWER_SPAWN]: 2510,
+        [STRUCTURE_NUKER]: 2520,
+        [STRUCTURE_FACTORY]: 2530,
     };
 
     public static getBuildPriority(structureType: BuildableStructureConstant): number {
-        switch (structureType) {
-            case STRUCTURE_SPAWN:
-                return this.buildPriorities.spawn;
-            case STRUCTURE_EXTENSION:
-                return this.buildPriorities.extension;
-            case STRUCTURE_CONTAINER:
-                return this.buildPriorities.container;
-            case STRUCTURE_TOWER:
-                return this.buildPriorities.tower;
-            case STRUCTURE_STORAGE:
-                return this.buildPriorities.storage;
-            case STRUCTURE_TERMINAL:
-                return this.buildPriorities.terminal;
-            case STRUCTURE_LAB:
-                return this.buildPriorities.lab;
-            case STRUCTURE_LINK:
-                return this.buildPriorities.link;
-            case STRUCTURE_ROAD:
-                return this.buildPriorities.road;
-            case STRUCTURE_EXTRACTOR:
-                return this.buildPriorities.extractor;
-            case STRUCTURE_WALL:
-                return this.buildPriorities.constructedWall;
-            case STRUCTURE_RAMPART:
-                return this.buildPriorities.rampart;
-            case STRUCTURE_OBSERVER:
-                return this.buildPriorities.observer;
-            case STRUCTURE_POWER_SPAWN:
-                return this.buildPriorities.powerSpawn;
-            case STRUCTURE_NUKER:
-                return this.buildPriorities.nuker;
-            case STRUCTURE_FACTORY:
-                return this.buildPriorities.factory;
-            default:
-                return Infinity;
+        if (!this.buildPriorities.hasOwnProperty(structureType)) {
+            console.log(`Build queue doesn't have a definition for ${structureType}`)
+            return Infinity;
         }
+
+        return this.buildPriorities[structureType];
     };
 
     /* Retreive instance of build queue, init if neccessary */
